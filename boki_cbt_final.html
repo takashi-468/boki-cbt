@@ -1,0 +1,1593 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>簿記3級 仕訳テスト</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;600;700&family=Noto+Sans+JP:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:#1a1a2e; --ink2:#2d2d4e;
+  --paper:#faf8f3; --paper2:#f2efe7;
+  --ruled:#ddd8cc;
+  --accent:#c84b31;
+  --debit:#1d4ed8; --credit:#166534;
+  --gold:#b8860b;
+  --text:#2c2c3e; --text2:#6b6b8a; --text3:#a0a0b8;
+  --success:#16a34a; --error:#dc2626; --warn:#d97706;
+  --radius:8px;
+  --shadow:0 2px 12px rgba(0,0,0,.08);
+  --shadow-lg:0 8px 32px rgba(0,0,0,.14);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--paper);background-image:repeating-linear-gradient(0deg,transparent,transparent 31px,var(--ruled) 31px,var(--ruled) 32px);background-attachment:fixed;color:var(--text);font-family:'Noto Sans JP',sans-serif;min-height:100vh;font-size:14px;}
+.hidden{display:none!important;} .w-full{width:100%;}
+
+/* TOP BAR */
+#topbar{background:var(--ink);color:#fff;padding:0 24px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(0,0,0,.3);}
+.logo{font-family:'Noto Serif JP',serif;font-size:17px;font-weight:700;letter-spacing:.04em;display:flex;align-items:center;gap:8px;}
+.logo-badge{background:var(--accent);color:#fff;font-size:10px;padding:2px 7px;border-radius:3px;font-weight:700;}
+.nav-tabs{display:flex;gap:4px;}
+.nav-tab{padding:6px 16px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;color:rgba(255,255,255,.6);border:none;background:transparent;transition:all .2s;font-family:'Noto Sans JP',sans-serif;}
+.nav-tab.active{background:rgba(255,255,255,.15);color:#fff;}
+.nav-tab:hover:not(.active){color:rgba(255,255,255,.85);}
+#topbar-user{display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(255,255,255,.75);}
+.user-badge{background:rgba(255,255,255,.12);padding:4px 12px;border-radius:5px;}
+.logout-btn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.7);padding:4px 12px;border-radius:5px;cursor:pointer;font-size:12px;transition:all .2s;font-family:'Noto Sans JP',sans-serif;}
+.logout-btn:hover{background:rgba(255,255,255,.18);color:#fff;}
+#topbar-clock{font-family:'DM Mono',monospace;font-size:12px;color:rgba(255,255,255,.5);}
+
+#app{max-width:920px;margin:0 auto;padding:28px 20px;}
+.card{background:rgba(255,255,255,.92);border:1px solid var(--ruled);border-radius:12px;padding:24px;box-shadow:var(--shadow);}
+
+/* BUTTON */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 20px;border-radius:var(--radius);font-family:'Noto Sans JP',sans-serif;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all .2s;white-space:nowrap;}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-primary:hover{background:#b03d26;transform:translateY(-1px);box-shadow:0 4px 14px rgba(200,75,49,.3);}
+.btn-secondary{background:var(--ink);color:#fff;}
+.btn-secondary:hover{background:var(--ink2);}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--ruled);}
+.btn-ghost:hover{background:var(--paper2);color:var(--text);}
+.btn-success{background:var(--success);color:#fff;}
+.btn-success:hover{background:#15803d;}
+.btn-warn{background:var(--warn);color:#fff;}
+.btn-sm{padding:6px 12px;font-size:12px;}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important;}
+
+/* INPUT */
+.input,.select{background:#fff;border:1px solid var(--ruled);border-radius:var(--radius);color:var(--text);font-family:'Noto Sans JP',sans-serif;font-size:13px;padding:8px 12px;outline:none;transition:border .2s;}
+.input:focus,.select:focus{border-color:var(--accent);}
+.select option{background:#fff;}
+.label{font-size:12px;color:var(--text2);font-weight:500;margin-bottom:4px;display:block;}
+
+/* BADGE */
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.04em;}
+.badge-red{background:#fee2e2;color:var(--error);}
+.badge-blue{background:#dbeafe;color:var(--debit);}
+.badge-green{background:#dcfce7;color:var(--success);}
+.badge-gold{background:#fef3c7;color:var(--gold);}
+.badge-ink{background:var(--ink);color:#fff;}
+.badge-warn{background:#fef3c7;color:var(--warn);}
+.badge-gray{background:#f1f5f9;color:#64748b;}
+
+/* LOGIN */
+#screen-login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:var(--paper);background-image:repeating-linear-gradient(0deg,transparent,transparent 31px,var(--ruled) 31px,var(--ruled) 32px);}
+.login-box{background:rgba(255,255,255,.96);border:1px solid var(--ruled);border-radius:16px;padding:40px 36px;width:100%;max-width:400px;box-shadow:var(--shadow-lg);text-align:center;}
+.login-logo{font-family:'Noto Serif JP',serif;font-size:1.5rem;font-weight:700;color:var(--ink);margin-bottom:4px;}
+.login-sub{font-size:13px;color:var(--text2);margin-bottom:28px;}
+.login-tabs{display:flex;border:1px solid var(--ruled);border-radius:8px;overflow:hidden;margin-bottom:24px;}
+.login-tab{flex:1;padding:9px;font-size:13px;font-weight:500;cursor:pointer;border:none;background:transparent;font-family:'Noto Sans JP',sans-serif;color:var(--text2);transition:all .2s;}
+.login-tab.active{background:var(--ink);color:#fff;}
+.login-form{display:flex;flex-direction:column;gap:12px;text-align:left;}
+.login-form .input{font-size:14px;padding:11px 14px;}
+.login-error{background:#fee2e2;color:var(--error);border-radius:6px;padding:8px 12px;font-size:13px;text-align:center;}
+.login-hint{font-size:11px;color:var(--text3);text-align:center;margin-top:4px;}
+
+/* LOCKED SCREEN */
+.locked-box{background:rgba(255,255,255,.96);border:2px solid var(--error);border-radius:16px;padding:48px 36px;max-width:440px;margin:60px auto;text-align:center;box-shadow:var(--shadow-lg);}
+.locked-icon{font-size:3.5rem;margin-bottom:16px;}
+.locked-title{font-family:'Noto Serif JP',serif;font-size:1.4rem;font-weight:700;color:var(--error);margin-bottom:8px;}
+.locked-desc{font-size:14px;color:var(--text2);line-height:1.8;margin-bottom:16px;}
+.locked-window{background:var(--paper2);border:1px solid var(--ruled);border-radius:8px;padding:12px 16px;font-size:13px;display:inline-block;text-align:left;}
+
+/* WELCOME */
+#screen-welcome{padding:40px 0;}
+.welcome-header{text-align:center;margin-bottom:40px;}
+.welcome-header h1{font-family:'Noto Serif JP',serif;font-size:2rem;font-weight:700;margin-bottom:8px;color:var(--ink);}
+.welcome-header p{color:var(--text2);font-size:15px;}
+.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:540px;margin:0 auto;}
+.role-card{background:rgba(255,255,255,.95);border:2px solid var(--ruled);border-radius:14px;padding:28px 24px;cursor:pointer;transition:all .25s;}
+.role-card:hover{border-color:var(--accent);transform:translateY(-3px);box-shadow:var(--shadow-lg);}
+.role-card-icon{font-size:2.2rem;margin-bottom:10px;}
+.role-card h2{font-size:1rem;font-weight:700;margin-bottom:4px;}
+.role-card p{font-size:12px;color:var(--text2);}
+
+/* TEACHER */
+#screen-teacher{display:flex;gap:20px;align-items:flex-start;}
+.t-sidebar{width:210px;flex-shrink:0;}
+.t-main{flex:1;min-width:0;}
+.sidebar-menu{display:flex;flex-direction:column;gap:3px;}
+.sidebar-item{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:var(--radius);cursor:pointer;font-size:13px;font-weight:500;color:var(--text2);border:none;background:transparent;transition:all .18s;width:100%;text-align:left;font-family:'Noto Sans JP',sans-serif;}
+.sidebar-item:hover{background:var(--paper2);color:var(--text);}
+.sidebar-item.active{background:var(--ink);color:#fff;}
+.section-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.section-title{font-family:'Noto Serif JP',serif;font-size:1.1rem;font-weight:700;}
+.divider{border:none;border-top:1px solid var(--ruled);margin:16px 0;}
+.form-group{display:flex;flex-direction:column;gap:5px;}
+.form-row{display:flex;gap:10px;}
+.form-row>*{flex:1;}
+.add-q-form{display:flex;flex-direction:column;gap:16px;}
+
+/* ═══════════════════════════════
+   CLASS MANAGEMENT
+═══════════════════════════════ */
+.class-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;}
+.class-card{background:rgba(255,255,255,.95);border:2px solid var(--ruled);border-radius:12px;overflow:hidden;transition:border .2s;box-shadow:var(--shadow);}
+.class-card:hover{border-color:var(--accent);}
+.class-card-header{padding:14px 18px;display:flex;align-items:center;justify-content:space-between;}
+.class-card-name{font-family:'Noto Serif JP',serif;font-size:1rem;font-weight:700;}
+.class-card-body{padding:0 18px 16px;}
+.class-card-meta{font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.7;}
+
+/* STATUS TOGGLE */
+.status-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-top:1px solid var(--ruled);}
+.status-label{font-size:12px;font-weight:600;}
+.toggle-switch{position:relative;width:48px;height:26px;cursor:pointer;}
+.toggle-switch input{opacity:0;width:0;height:0;}
+.toggle-track{position:absolute;inset:0;background:var(--ruled);border-radius:13px;transition:background .3s;}
+.toggle-thumb{position:absolute;width:20px;height:20px;background:#fff;border-radius:50%;top:3px;left:3px;transition:transform .3s;box-shadow:0 1px 4px rgba(0,0,0,.2);}
+.toggle-switch input:checked+.toggle-track{background:var(--success);}
+.toggle-switch input:checked~.toggle-thumb{transform:translateX(22px);}
+
+/* WINDOW SCHEDULE */
+.window-editor{background:var(--paper2);border:1px solid var(--ruled);border-radius:8px;padding:12px 14px;margin-top:10px;display:flex;flex-direction:column;gap:8px;}
+.window-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--text2);}
+.window-row .input{font-size:12px;padding:5px 8px;flex:1;min-width:130px;}
+.window-status{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.window-status.open{background:#dcfce7;color:var(--success);}
+.window-status.closed{background:#fee2e2;color:var(--error);}
+.window-status.scheduled{background:#fef3c7;color:var(--warn);}
+.window-status.manual-open{background:#dbeafe;color:var(--debit);}
+
+/* STUDENT TABLE */
+.student-table{width:100%;border-collapse:collapse;font-size:13px;}
+.student-table th{padding:8px 10px;text-align:left;font-size:11px;color:var(--text2);font-weight:700;border-bottom:2px solid var(--ruled);}
+.student-table td{padding:10px;border-bottom:1px solid var(--ruled);}
+.student-table tr:last-child td{border-bottom:none;}
+.pw-cell{font-family:'DM Mono',monospace;font-size:12px;background:var(--paper2);padding:2px 8px;border-radius:4px;}
+
+/* TEST LIST */
+.q-list{display:flex;flex-direction:column;gap:10px;}
+.q-list-item{background:rgba(255,255,255,.95);border:1px solid var(--ruled);border-radius:10px;padding:14px 16px;display:flex;align-items:flex-start;gap:12px;transition:border .2s;}
+.q-list-item:hover{border-color:var(--accent);}
+.q-num{font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);min-width:28px;padding-top:2px;}
+.q-body{flex:1;}
+.q-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;}
+.q-actions{display:flex;gap:6px;}
+
+/* CHEAT LOG */
+.cheat-log-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:6px;font-size:12px;}
+.cheat-log-item.warn{background:#fef3c7;}
+.cheat-log-item.danger{background:#fee2e2;}
+
+/* JOURNAL */
+.answer-journal{border:2px solid var(--ruled);border-radius:10px;overflow:hidden;margin-top:8px;}
+.answer-journal-header{display:grid;grid-template-columns:1fr 120px 1fr 120px;background:var(--ink);color:#fff;font-size:11px;font-weight:700;padding:8px 12px;letter-spacing:.06em;}
+.answer-journal-header .h-debit{color:#93c5fd;} .answer-journal-header .h-credit{color:#86efac;} .answer-journal-header .h-amount{text-align:right;}
+.answer-row{display:grid;grid-template-columns:1fr 120px 1fr 120px;border-bottom:1px solid var(--ruled);align-items:center;}
+.answer-row:last-child{border-bottom:none;}
+.answer-cell{padding:6px 8px;} .answer-cell-amount{padding:6px 8px;}
+.answer-select{width:100%;background:transparent;border:none;font-family:'Noto Sans JP',sans-serif;font-size:13px;color:var(--text);cursor:pointer;outline:none;padding:4px 2px;}
+.answer-select:focus{background:var(--paper2);border-radius:4px;}
+.answer-input-amount{width:100%;background:transparent;border:none;border-bottom:1px dashed var(--ruled);font-family:'DM Mono',monospace;font-size:13px;color:var(--text);text-align:right;padding:2px 4px;outline:none;transition:border .2s;}
+.answer-input-amount:focus{border-bottom-color:var(--accent);}
+.answer-row.debit-answer{background:rgba(219,234,254,.15);} .answer-row.credit-answer{background:rgba(220,252,231,.15);}
+
+/* EXAM */
+#screen-student{max-width:700px;margin:0 auto;}
+.exam-topbar{background:rgba(255,255,255,.95);border:1px solid var(--ruled);border-radius:10px;padding:14px 20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.exam-title-label{font-family:'Noto Serif JP',serif;font-weight:700;font-size:1rem;}
+.exam-meta{font-size:12px;color:var(--text2);}
+.progress-bar{width:120px;height:5px;background:var(--ruled);border-radius:3px;overflow:hidden;}
+.progress-fill{height:100%;background:var(--accent);border-radius:3px;transition:width .4s;}
+.timer{font-family:'DM Mono',monospace;font-size:14px;font-weight:500;color:var(--warn);background:#fef3c7;padding:4px 10px;border-radius:5px;}
+.timer.red{color:var(--error);background:#fee2e2;animation:blink 1s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.5}}
+.question-wrap{background:rgba(255,255,255,.95);border:1px solid var(--ruled);border-radius:12px;padding:26px;box-shadow:var(--shadow);animation:slideUp .3s ease;}
+@keyframes slideUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.q-header{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+.q-num-badge{font-family:'DM Mono',monospace;font-size:11px;font-weight:500;background:var(--ink);color:#fff;padding:3px 10px;border-radius:4px;}
+.scenario-box{background:var(--paper2);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:14px 16px;margin-bottom:18px;font-size:14px;line-height:1.75;font-family:'Noto Serif JP',serif;}
+.instruction{font-size:12px;color:var(--text2);margin-bottom:10px;}
+.add-row-btn{margin-top:8px;font-size:12px;color:var(--text2);background:none;border:1px dashed var(--ruled);border-radius:6px;padding:6px 14px;cursor:pointer;transition:all .2s;font-family:'Noto Sans JP',sans-serif;}
+.add-row-btn:hover{border-color:var(--accent);color:var(--accent);}
+.q-nav{display:flex;align-items:center;justify-content:space-between;margin-top:18px;}
+.q-dots{display:flex;gap:5px;}
+/* 問題ナビゲーション */
+.q-dot-btn{
+  width:32px;height:32px;border-radius:50%;
+  border:2px solid var(--ruled);background:#fff;
+  font-family:'DM Mono',monospace;font-size:11px;font-weight:700;
+  color:var(--text3);cursor:pointer;transition:all .2s;
+  display:flex;align-items:center;justify-content:center;
+  position:relative;
+}
+.q-dot-btn:hover{border-color:var(--accent);color:var(--accent);transform:scale(1.1);}
+.q-dot-btn.current{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 0 0 3px rgba(200,75,49,.2);}
+.q-dot-btn.answered{background:var(--ink);border-color:var(--ink);color:#fff;}
+.q-dot-btn.skipped{background:var(--paper2);border-color:var(--warn);color:var(--warn);}
+.q-dot-btn.current.answered{background:var(--accent);border-color:var(--accent);}
+
+/* スキップバッジ */
+.q-dot-btn.skipped::after{
+  content:'';position:absolute;top:-2px;right:-2px;
+  width:8px;height:8px;border-radius:50%;
+  background:var(--warn);border:1px solid #fff;
+}
+
+/* ナビゲーション全体 */
+.q-nav-wrap{margin-top:18px;}
+.q-nav-dots{
+  display:flex;gap:6px;flex-wrap:wrap;
+  background:rgba(255,255,255,.92);border:1px solid var(--ruled);
+  border-radius:10px;padding:12px 14px;margin-bottom:12px;
+  align-items:center;
+}
+.q-nav-dots-label{font-size:11px;color:var(--text3);margin-right:4px;white-space:nowrap;}
+.q-nav-legend{display:flex;gap:12px;margin-top:8px;padding-top:8px;border-top:1px solid var(--ruled);flex-wrap:wrap;}
+.q-nav-legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2);}
+.q-nav-legend-dot{width:10px;height:10px;border-radius:50%;}
+
+.q-nav-btns{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.q-nav-btns-left{display:flex;gap:8px;}
+.q-nav-btns-right{display:flex;gap:8px;}
+
+/* 未回答警告 */
+.unanswered-warn{
+  background:#fef3c7;border:1px solid #fde68a;border-radius:8px;
+  padding:10px 14px;font-size:13px;color:var(--warn);
+  display:flex;align-items:center;gap:8px;margin-bottom:12px;
+}
+.unanswered-warn strong{color:#92400e;}
+.feedback-box{margin-top:14px;border-radius:8px;padding:12px 14px;font-size:13px;}
+.feedback-box.correct{background:#dcfce7;border:1px solid #bbf7d0;color:#15803d;display:block;}
+.feedback-box.wrong{background:#fee2e2;border:1px solid #fecaca;color:#b91c1c;display:block;}
+
+/* CHEAT OVERLAY */
+#cheat-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn .2s ease;}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.cheat-box{background:#fff;border-radius:16px;padding:36px 32px;max-width:420px;width:100%;text-align:center;border-top:5px solid var(--error);box-shadow:0 20px 60px rgba(0,0,0,.4);}
+.cheat-icon{font-size:3rem;margin-bottom:12px;}
+.cheat-title{font-family:'Noto Serif JP',serif;font-size:1.3rem;font-weight:700;color:var(--error);margin-bottom:8px;}
+.cheat-desc{font-size:14px;color:var(--text);line-height:1.7;margin-bottom:20px;}
+.cheat-counter{font-family:'DM Mono',monospace;font-size:1rem;font-weight:700;padding:8px 16px;border-radius:6px;display:inline-block;margin-bottom:20px;}
+.cheat-counter.yellow{background:#fef3c7;color:var(--warn);} .cheat-counter.red{background:#fee2e2;color:var(--error);}
+#force-submit-overlay{position:fixed;inset:0;z-index:600;background:rgba(220,38,38,.95);display:flex;align-items:center;justify-content:center;padding:20px;}
+.force-box{background:#fff;border-radius:16px;padding:36px 32px;max-width:380px;width:100%;text-align:center;}
+.force-count{font-family:'DM Mono',monospace;font-size:4rem;font-weight:700;color:var(--error);}
+.force-title{font-family:'Noto Serif JP',serif;font-size:1.1rem;font-weight:700;margin-bottom:6px;}
+.force-desc{font-size:13px;color:var(--text2);}
+
+/* RESULT */
+.result-wrap{text-align:center;}
+.score-display{background:var(--ink);color:#fff;border-radius:16px;padding:36px;margin-bottom:24px;position:relative;overflow:hidden;}
+.score-display::before{content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.04);}
+.score-big{font-family:'DM Mono',monospace;font-size:4rem;font-weight:500;line-height:1;}
+.score-big span{font-size:1.5rem;}
+.score-grade{font-family:'Noto Serif JP',serif;font-size:1.2rem;margin-top:8px;}
+.score-sub{font-size:13px;color:rgba(255,255,255,.6);margin-top:4px;}
+.cheat-note{font-size:12px;color:rgba(255,200,0,.9);margin-top:8px;}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px;}
+.stat-box{background:rgba(255,255,255,.95);border:1px solid var(--ruled);border-radius:10px;padding:16px;}
+.stat-num{font-family:'DM Mono',monospace;font-size:1.6rem;font-weight:500;}
+.stat-label{font-size:11px;color:var(--text2);margin-top:2px;}
+.review-section{text-align:left;}
+.review-title{font-family:'Noto Serif JP',serif;font-size:1rem;font-weight:700;margin-bottom:14px;}
+.review-item{background:rgba(255,255,255,.95);border:1px solid var(--ruled);border-radius:10px;margin-bottom:10px;overflow:hidden;}
+.review-item-head{padding:10px 14px;font-size:13px;display:flex;align-items:flex-start;gap:8px;border-bottom:1px solid var(--ruled);}
+.review-item.correct .review-item-head{background:rgba(22,163,74,.05);}
+.review-item.wrong .review-item-head{background:rgba(220,38,38,.05);}
+.review-item-body{padding:10px 14px;font-size:12px;color:var(--text2);}
+.correct-answer-display{margin-top:6px;padding:8px 12px;background:var(--paper2);border-radius:6px;}
+
+/* TEST SELECT */
+.test-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;}
+.test-card{background:rgba(255,255,255,.95);border:2px solid var(--ruled);border-radius:12px;padding:20px;cursor:pointer;transition:all .25s;}
+.test-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:var(--shadow-lg);}
+.test-card-title{font-weight:700;font-size:14px;margin-bottom:6px;}
+.test-card-meta{font-size:12px;color:var(--text2);line-height:1.8;}
+
+/* TOAST */
+#toast{position:fixed;bottom:20px;right:20px;z-index:999;background:var(--ink);color:#fff;border-radius:8px;padding:10px 18px;font-size:13px;transform:translateY(60px);opacity:0;transition:all .3s;pointer-events:none;}
+#toast.show{transform:none;opacity:1;}
+#toast.ok{background:var(--success);} #toast.ng{background:var(--error);}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;}
+.modal-box{background:var(--paper);border:1px solid var(--ruled);border-radius:14px;padding:26px;width:100%;max-width:640px;max-height:88vh;overflow-y:auto;box-shadow:var(--shadow-lg);}
+.modal-title{font-family:'Noto Serif JP',serif;font-size:1.05rem;font-weight:700;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;}
+.modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--text2);line-height:1;}
+.modal-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;}
+
+@media(max-width:640px){
+  .role-grid,.class-grid{grid-template-columns:1fr;}
+  #screen-teacher{flex-direction:column;}
+  .t-sidebar{width:100%;}
+  .sidebar-menu{flex-direction:row;flex-wrap:wrap;}
+  .answer-journal-header,.answer-row{grid-template-columns:1fr 90px 1fr 90px;}
+  .stats-row{grid-template-columns:1fr 1fr;}
+  .login-box{padding:28px 20px;}
+}
+</style>
+</head>
+<body>
+
+<!-- ════ LOGIN ════ -->
+<div id="screen-login">
+  <div class="login-box">
+    <div class="login-logo">簿記CBT <span style="background:var(--accent);color:#fff;font-size:10px;padding:2px 6px;border-radius:3px;vertical-align:middle;font-weight:700;">3級</span></div>
+    <div class="login-sub">仕訳トレーニングシステム</div>
+    <div class="login-tabs">
+      <button class="login-tab active" id="ltab-student" onclick="switchLoginTab('student')">🎓 生徒</button>
+      <button class="login-tab" id="ltab-teacher" onclick="switchLoginTab('teacher')">📐 先生</button>
+    </div>
+    <div class="login-form">
+      <div id="login-student-fields">
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div><span class="label">生徒ID（出席番号）</span><input class="input w-full" id="l-sid" placeholder="例: 2A-01" autocomplete="off"></div>
+          <div><span class="label">パスワード</span><input class="input w-full" type="password" id="l-spw" placeholder="先生から配布されたパスワード" onkeydown="if(event.key==='Enter')doLogin()"></div>
+        </div>
+      </div>
+      <div id="login-teacher-fields" class="hidden">
+        <div><span class="label">管理者パスワード</span><input class="input w-full" type="password" id="l-tpw" placeholder="管理者パスワード" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      </div>
+      <div id="login-error" class="login-error hidden"></div>
+      <button class="btn btn-primary w-full" onclick="doLogin()">ログイン →</button>
+      <div class="login-hint">デモ: 生徒ID「S001〜S005」/ PW「boki123」　先生PW「teacher」</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ MAIN APP ════ -->
+<div id="main-app" class="hidden">
+<nav id="topbar">
+  <div class="logo">簿記CBT <span class="logo-badge">3級</span></div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="goScreen('welcome')">ホーム</button>
+    <button class="nav-tab" id="nav-teacher" onclick="goScreen('teacher')">先生</button>
+    <button class="nav-tab" onclick="goScreen('student')">受験</button>
+  </div>
+  <div style="display:flex;align-items:center;gap:14px;">
+    <span id="topbar-clock"></span>
+    <div id="topbar-user">
+      <span class="user-badge" id="topbar-username"></span>
+      <button class="logout-btn" onclick="doLogout()">ログアウト</button>
+    </div>
+  </div>
+</nav>
+
+<div id="app">
+
+<!-- WELCOME -->
+<div id="screen-welcome">
+  <div class="welcome-header" style="padding:40px 0;">
+    <h1>仕訳トレーニング</h1>
+    <p>日商簿記 3級対応 ／ コンピュータ試験形式</p>
+  </div>
+  <div class="role-grid">
+    <div class="role-card" id="welcome-teacher-card" onclick="goScreen('teacher')">
+      <div class="role-card-icon">📐</div>
+      <h2>先生モード</h2>
+      <p>テスト作成・クラス管理・受験ウィンドウ設定</p>
+    </div>
+    <div class="role-card" onclick="goScreen('student')">
+      <div class="role-card-icon">✏️</div>
+      <h2>受験する</h2>
+      <p>テストを選んで仕訳問題に回答</p>
+    </div>
+  </div>
+</div>
+
+<!-- TEACHER -->
+<div id="screen-teacher" class="hidden">
+  <div class="t-sidebar">
+    <div class="card" style="padding:12px;">
+      <div class="sidebar-menu">
+        <button class="sidebar-item active" id="stab-classes" onclick="tTab('classes')">🏫 クラス管理</button>
+        <button class="sidebar-item" id="stab-students" onclick="tTab('students')">👥 生徒一覧</button>
+        <button class="sidebar-item" id="stab-tests" onclick="tTab('tests')">📋 テスト一覧</button>
+        <button class="sidebar-item" id="stab-create" onclick="tTab('create')">✏️ テスト作成</button>
+        <button class="sidebar-item" id="stab-cheatlog" onclick="tTab('cheatlog')">🚨 不正記録</button>
+        <button class="sidebar-item" id="stab-accounts" onclick="tTab('accounts')">📚 勘定科目</button>
+      </div>
+    </div>
+  </div>
+  <div class="t-main">
+
+    <!-- クラス管理 -->
+    <div id="t-classes">
+      <div class="section-hd">
+        <div>
+          <div class="section-title">クラス管理</div>
+          <div style="font-size:12px;color:var(--text2);margin-top:2px;">受験ウィンドウ（許可時間）をクラスごとに設定します</div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="openAddClass()">＋ クラス追加</button>
+      </div>
+      <div class="class-grid" id="class-grid"></div>
+    </div>
+
+    <!-- 生徒一覧 -->
+    <div id="t-students" class="hidden">
+      <div class="section-hd">
+        <div class="section-title">生徒一覧</div>
+        <button class="btn btn-primary btn-sm" onclick="openAddStudent()">＋ 生徒追加</button>
+      </div>
+      <div style="margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+        <span class="label" style="margin:0;">クラスで絞り込み：</span>
+        <select class="select" id="student-filter-cls" onchange="renderStudentTable()" style="width:auto;"></select>
+      </div>
+      <div class="card"><table class="student-table"><thead><tr>
+        <th>生徒ID</th><th>氏名</th><th>クラス</th><th>パスワード</th><th>最終受験</th><th>操作</th>
+      </tr></thead><tbody id="student-tbody"></tbody></table></div>
+    </div>
+
+    <!-- テスト一覧 -->
+    <div id="t-tests" class="hidden">
+      <div class="section-hd">
+        <div class="section-title">テスト一覧</div>
+        <button class="btn btn-primary btn-sm" onclick="tTab('create')">＋ 新規作成</button>
+      </div>
+      <div class="q-list" id="test-list"></div>
+      <div id="test-list-empty" class="hidden" style="text-align:center;padding:40px;color:var(--text3);"><div style="font-size:2rem;margin-bottom:8px;">📭</div>テストがありません</div>
+    </div>
+
+    <!-- テスト作成 -->
+    <div id="t-create" class="hidden">
+      <div class="section-hd">
+        <div class="section-title" id="create-heading">新規テスト作成</div>
+        <button class="btn btn-ghost btn-sm" onclick="tTab('tests')">← 戻る</button>
+      </div>
+      <div class="card add-q-form">
+        <div class="form-row">
+          <div class="form-group"><span class="label">テスト名</span><input class="input w-full" id="t-name" placeholder="例：第1回 仕訳小テスト"></div>
+          <div class="form-group" style="max-width:100px;"><span class="label">制限時間（分）</span><input class="input w-full" type="number" id="t-time" value="10" min="1" max="120"></div>
+          <div class="form-group" style="max-width:100px;"><span class="label">警告上限（回）</span><input class="input w-full" type="number" id="t-cheat-limit" value="3" min="1" max="10"></div>
+        </div>
+        <div class="divider"></div>
+        <div class="section-hd" style="margin-bottom:10px;">
+          <span style="font-weight:600;font-size:14px;">問題 (<span id="q-cnt">0</span>問)</span>
+          <button class="btn btn-ghost btn-sm" onclick="openAddQ()">＋ 問題を追加</button>
+        </div>
+        <div id="q-preview-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+        <div id="q-preview-empty" style="text-align:center;padding:20px;color:var(--text3);font-size:13px;">問題がありません</div>
+        <div class="divider"></div>
+        <div style="display:flex;justify-content:flex-end;gap:8px;">
+          <button class="btn btn-ghost" onclick="tTab('tests')">キャンセル</button>
+          <button class="btn btn-primary" onclick="saveTest()">💾 保存する</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 不正記録 -->
+    <div id="t-cheatlog" class="hidden">
+      <div class="section-hd">
+        <div class="section-title">🚨 不正行為記録</div>
+        <button class="btn btn-ghost btn-sm" onclick="clearCheatLog()">ログを消去</button>
+      </div>
+      <div class="card">
+        <div id="cheat-log-list" style="display:flex;flex-direction:column;gap:6px;"></div>
+        <div id="cheat-log-empty" style="text-align:center;padding:30px;color:var(--text3);font-size:13px;">記録はありません</div>
+      </div>
+    </div>
+
+    <!-- 勘定科目 -->
+    <div id="t-accounts" class="hidden">
+      <div class="section-hd">
+        <div class="section-title">勘定科目一覧</div>
+        <button class="btn btn-ghost btn-sm" onclick="openAddAccount()">＋ 追加</button>
+      </div>
+      <div class="card"><div id="account-table-wrap"></div></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- STUDENT -->
+<div id="screen-student" class="hidden">
+  <!-- ロック中 -->
+  <div id="s-locked" class="hidden">
+    <div class="locked-box">
+      <div class="locked-icon">🔒</div>
+      <div class="locked-title" id="locked-title">現在は受験できません</div>
+      <div class="locked-desc" id="locked-desc"></div>
+      <div class="locked-window" id="locked-window"></div>
+    </div>
+  </div>
+  <!-- テスト選択 -->
+  <div id="s-select" class="hidden">
+    <div class="section-hd"><div class="section-title">テストを選ぶ</div><span class="badge badge-green" id="s-class-badge"></span></div>
+    <div class="test-grid" id="s-test-grid"></div>
+    <div id="s-empty" class="hidden" style="text-align:center;padding:60px;color:var(--text3);"><div style="font-size:2rem;margin-bottom:8px;">📭</div>テストがありません</div>
+  </div>
+  <!-- 受験 -->
+  <div id="s-exam" class="hidden">
+    <div class="exam-topbar">
+      <div>
+        <div class="exam-title-label" id="exam-title-label"></div>
+        <div class="exam-meta" id="exam-meta-label"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="progress-bar"><div class="progress-fill" id="e-progress-fill" style="width:0%"></div></div>
+          <span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--text2);" id="e-progress-label">0/0</span>
+        </div>
+        <div class="timer" id="e-timer">--:--</div>
+      </div>
+    </div>
+    <div id="cheat-warn-bar" class="hidden" style="background:#fef3c7;border:1px solid #fde68a;border-radius:8px;padding:8px 16px;margin-bottom:14px;font-size:13px;display:flex;align-items:center;gap:8px;">
+      ⚠️ <span id="cheat-warn-text"></span>
+    </div>
+    <div class="question-wrap" id="q-wrap">
+      <div class="q-header">
+        <span class="q-num-badge" id="q-num-badge">Q1</span>
+        <span class="badge badge-ink">仕訳問題</span>
+        <span style="flex:1;"></span>
+        <span class="badge badge-gold" id="q-category-badge"></span>
+      </div>
+      <div class="scenario-box" id="q-scenario"></div>
+      <div class="instruction">借方・貸方の勘定科目を選択し、金額を入力してください。</div>
+      <div id="q-answer-area"></div>
+      <div class="feedback-box hidden" id="q-feedback"></div>
+    </div>
+    <!-- ナビゲーション -->
+    <div class="q-nav-wrap">
+      <div class="unanswered-warn hidden" id="unanswered-warn">
+        ⚠️ <span id="unanswered-warn-text"></span>
+      </div>
+      <div class="q-nav-dots">
+        <span class="q-nav-dots-label">問題：</span>
+        <div id="q-dots" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+        <div class="q-nav-legend" style="width:100%;">
+          <div class="q-nav-legend-item"><div class="q-nav-legend-dot" style="background:var(--accent);border-radius:50%;"></div>現在</div>
+          <div class="q-nav-legend-item"><div class="q-nav-legend-dot" style="background:var(--ink);border-radius:50%;"></div>回答済み</div>
+          <div class="q-nav-legend-item"><div class="q-nav-legend-dot" style="background:#fff;border:2px solid var(--ruled);border-radius:50%;"></div>未回答</div>
+          <div class="q-nav-legend-item"><div class="q-nav-legend-dot" style="background:var(--paper2);border:2px solid var(--warn);border-radius:50%;"></div>スキップ</div>
+        </div>
+      </div>
+      <div class="q-nav-btns">
+        <div class="q-nav-btns-left">
+          <button class="btn btn-ghost" id="e-prev-btn" onclick="examPrev()">← 前へ</button>
+          <button class="btn btn-ghost" id="e-skip-btn" onclick="examSkip()" style="color:var(--warn);border-color:var(--warn);">スキップ →</button>
+        </div>
+        <div class="q-nav-btns-right">
+          <button class="btn btn-primary" id="e-next-btn" onclick="examNext()">次へ →</button>
+          <button class="btn btn-secondary hidden" id="e-submit-btn" onclick="confirmSubmit()">提出する 🚀</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- 結果 -->
+  <div id="s-result" class="hidden">
+    <div class="result-wrap">
+      <div class="score-display">
+        <div class="score-big" id="r-score">--<span>点</span></div>
+        <div class="score-grade" id="r-grade"></div>
+        <div class="score-sub" id="r-sub"></div>
+        <div class="cheat-note" id="r-cheat-note"></div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-box"><div class="stat-num" id="r-correct" style="color:var(--success)">0</div><div class="stat-label">正解</div></div>
+        <div class="stat-box"><div class="stat-num" id="r-wrong" style="color:var(--error)">0</div><div class="stat-label">不正解</div></div>
+        <div class="stat-box"><div class="stat-num" id="r-total">0</div><div class="stat-label">合計問題数</div></div>
+      </div>
+      <div class="review-section" id="r-review"></div>
+      <div style="display:flex;gap:10px;justify-content:center;margin-top:24px;">
+        <button class="btn btn-ghost" onclick="sTab('select');checkAccess()">← テスト選択</button>
+        <button class="btn btn-primary" onclick="retakeTest()">🔄 もう一度</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /app -->
+</div><!-- /main-app -->
+
+<!-- CHEAT OVERLAYS -->
+<div id="cheat-overlay" class="hidden">
+  <div class="cheat-box">
+    <div class="cheat-icon" id="cheat-icon">⚠️</div>
+    <div class="cheat-title" id="cheat-title">タブ切り替えを検知しました</div>
+    <div class="cheat-desc" id="cheat-desc"></div>
+    <div class="cheat-counter yellow" id="cheat-counter"></div>
+    <button class="btn btn-primary w-full" onclick="closeCheatOverlay()" id="cheat-resume-btn">テストに戻る</button>
+  </div>
+</div>
+<div id="force-submit-overlay" class="hidden">
+  <div class="force-box">
+    <div class="force-title">⛔ 不正行為が検知されました</div>
+    <div class="force-count" id="force-count">3</div>
+    <div class="force-desc">秒後に自動提出されます</div>
+  </div>
+</div>
+
+<!-- ADD CLASS MODAL -->
+<div class="overlay hidden" id="modal-class">
+<div class="modal-box" style="max-width:460px;">
+  <div class="modal-title">クラスを追加<button class="modal-close" onclick="closeModal('modal-class')">✕</button></div>
+  <div style="display:flex;flex-direction:column;gap:14px;">
+    <div class="form-group"><span class="label">クラス名</span><input class="input w-full" id="cls-name" placeholder="例: 2-A"></div>
+    <div class="form-group"><span class="label">説明（任意）</span><input class="input w-full" id="cls-desc" placeholder="例: 商業科2年A組"></div>
+  </div>
+  <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('modal-class')">キャンセル</button><button class="btn btn-primary" onclick="addClass()">追加</button></div>
+</div>
+</div>
+
+<!-- ADD STUDENT MODAL -->
+<div class="overlay hidden" id="modal-student">
+<div class="modal-box" style="max-width:420px;">
+  <div class="modal-title">生徒を追加<button class="modal-close" onclick="closeModal('modal-student')">✕</button></div>
+  <div style="display:flex;flex-direction:column;gap:12px;">
+    <div class="form-group"><span class="label">生徒ID（出席番号）</span><input class="input w-full" id="s-id" placeholder="例: 2A-06"></div>
+    <div class="form-group"><span class="label">氏名</span><input class="input w-full" id="s-name" placeholder="例: 山田 太郎"></div>
+    <div class="form-group"><span class="label">クラス</span><select class="select w-full" id="s-cls-sel"></select></div>
+    <div class="form-group"><span class="label">パスワード</span><input class="input w-full" id="s-pw" placeholder="例: boki123" autocomplete="off"></div>
+  </div>
+  <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('modal-student')">キャンセル</button><button class="btn btn-primary" onclick="addStudent()">追加</button></div>
+</div>
+</div>
+
+<!-- ADD QUESTION MODAL -->
+<div class="overlay hidden" id="modal-addq">
+<div class="modal-box">
+  <div class="modal-title">仕訳問題を追加<button class="modal-close" onclick="closeModal('modal-addq')">✕</button></div>
+  <div style="display:flex;flex-direction:column;gap:14px;">
+    <div class="form-group"><span class="label">取引の説明文</span><textarea class="input w-full" id="mq-scenario" rows="3" style="resize:vertical;" placeholder="例：現金 50,000円 を元手に事業を開始した。"></textarea></div>
+    <div class="form-row">
+      <div class="form-group"><span class="label">カテゴリ</span><select class="select w-full" id="mq-category"><option>資産・負債・資本</option><option>収益・費用</option><option>現金・預金</option><option>売上・仕入</option><option>手形</option><option>固定資産</option><option>決算整理</option></select></div>
+      <div class="form-group" style="max-width:90px;"><span class="label">配点</span><input class="input w-full" type="number" id="mq-points" value="4" min="1" max="10"></div>
+    </div>
+    <div class="divider" style="margin:4px 0;"></div>
+    <div style="font-weight:600;font-size:13px;">正答（仕訳）</div>
+    <div class="answer-journal">
+      <div class="answer-journal-header"><span class="h-debit">借　方</span><span class="h-amount">金　額</span><span class="h-credit">貸　方</span><span class="h-amount">金　額</span></div>
+      <div id="modal-rows"></div>
+    </div>
+    <button class="add-row-btn" onclick="addModalRow()">＋ 行を追加（複合仕訳）</button>
+    <div class="form-group"><span class="label">解説（任意）</span><textarea class="input w-full" id="mq-explanation" rows="2" style="resize:vertical;" placeholder="採点後に表示する解説..."></textarea></div>
+  </div>
+  <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('modal-addq')">キャンセル</button><button class="btn btn-primary" onclick="addQuestion()">追加する</button></div>
+</div>
+</div>
+
+<!-- ADD ACCOUNT MODAL -->
+<div class="overlay hidden" id="modal-account">
+<div class="modal-box" style="max-width:400px;">
+  <div class="modal-title">勘定科目を追加<button class="modal-close" onclick="closeModal('modal-account')">✕</button></div>
+  <div style="display:flex;flex-direction:column;gap:12px;">
+    <div class="form-group"><span class="label">勘定科目名</span><input class="input w-full" id="acc-name" placeholder="例：未収入金"></div>
+    <div class="form-group"><span class="label">分類</span><select class="select w-full" id="acc-type"><option value="資産">資産</option><option value="負債">負債</option><option value="資本">資本</option><option value="収益">収益</option><option value="費用">費用</option></select></div>
+  </div>
+  <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('modal-account')">キャンセル</button><button class="btn btn-primary" onclick="addAccount()">追加</button></div>
+</div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════
+// GAS 連携設定
+// ★ デプロイ後にここのURLを書き換えてください ★
+// ══════════════════════════════════════════════
+const GAS_URL = 'https://script.google.com/a/macros/hmc.hyogo-c.ed.jp/s/AKfycbwSJyGd5tH_c6QXftVObxk_8za41i9p4-v9P00xeffLhBA97Eg1LpY80LxHPlMpjBsw/exec';
+const GAS_ENABLED = GAS_URL !== 'YOUR_GAS_URL_HERE';
+
+// GAS GET リクエスト
+async function gasGet(action) {
+  if (!GAS_ENABLED) return null;
+  try {
+    const res = await fetch(`${GAS_URL}?action=${action}`);
+    const json = await res.json();
+    return json.ok ? json.data : null;
+  } catch(e) {
+    console.warn('GAS GET失敗:', e);
+    return null;
+  }
+}
+
+// GAS POST リクエスト
+async function gasPost(payload) {
+  if (!GAS_ENABLED) return false;
+  try {
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+    const json = await res.json();
+    return json.ok;
+  } catch(e) {
+    console.warn('GAS POST失敗:', e);
+    return false;
+  }
+}
+
+// 起動時にGASからデータを読み込む
+async function loadFromGAS() {
+  if (!GAS_ENABLED) return;
+  showSyncStatus('📡 データを読み込み中...');
+  try {
+    // 生徒データ
+    const remoteStudents = await gasGet('getStudents');
+    if (remoteStudents && remoteStudents.length > 0) {
+      remoteStudents.forEach(s => {
+        students[s.id] = { name: s.name, cls: s.cls, pw: s.pw, lastExam: '-' };
+      });
+    }
+    // テストデータ
+    const remoteTests = await gasGet('getTests');
+    if (remoteTests && remoteTests.length > 0) {
+      // サンプルを上書きせずにGASのデータを優先
+      tests = remoteTests;
+    }
+    showSyncStatus('✅ 同期完了', 2000);
+  } catch(e) {
+    showSyncStatus('⚠️ オフラインモード', 2000);
+  }
+}
+
+function showSyncStatus(msg, hideAfter = 0) {
+  let el = document.getElementById('sync-status');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'sync-status';
+    el.style.cssText = 'position:fixed;top:60px;right:16px;z-index:300;background:var(--ink);color:#fff;padding:6px 14px;border-radius:6px;font-size:12px;font-family:"Noto Sans JP",sans-serif;transition:opacity .4s;';
+    document.body.appendChild(el);
+  }
+  el.textContent = msg; el.style.opacity = '1';
+  if (hideAfter) setTimeout(() => el.style.opacity = '0', hideAfter);
+}
+
+// ══════════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════════
+const TEACHER_PW = 'teacher';
+
+// クラスマスタ
+// window: { manualOpen: bool, schedules: [{start:'YYYY-MM-DDTHH:MM', end:'YYYY-MM-DDTHH:MM'}] }
+let classes = {
+  '2-A': { desc:'商業科2年A組', window:{ manualOpen:false, schedules:[] } },
+  '2-B': { desc:'商業科2年B組', window:{ manualOpen:false, schedules:[] } },
+  '2-C': { desc:'商業科2年C組', window:{ manualOpen:false, schedules:[] } },
+};
+
+// 生徒マスタ
+let students = {
+  'S001':{ name:'山田 太郎', cls:'2-A', pw:'boki123', lastExam:'-' },
+  'S002':{ name:'鈴木 花子', cls:'2-A', pw:'boki123', lastExam:'-' },
+  'S003':{ name:'田中 一郎', cls:'2-B', pw:'boki123', lastExam:'-' },
+  'S004':{ name:'佐藤 次郎', cls:'2-B', pw:'boki123', lastExam:'-' },
+  'S005':{ name:'伊藤 美咲', cls:'2-C', pw:'boki123', lastExam:'-' },
+};
+
+let cheatLog = [];
+let accounts = [
+  {name:'現金',type:'資産'},{name:'当座預金',type:'資産'},{name:'普通預金',type:'資産'},
+  {name:'小口現金',type:'資産'},{name:'受取手形',type:'資産'},{name:'売掛金',type:'資産'},
+  {name:'有価証券',type:'資産'},{name:'繰越商品',type:'資産'},{name:'貸付金',type:'資産'},
+  {name:'前払費用',type:'資産'},{name:'未収入金',type:'資産'},{name:'仮払金',type:'資産'},
+  {name:'立替金',type:'資産'},{name:'建物',type:'資産'},{name:'備品',type:'資産'},
+  {name:'土地',type:'資産'},{name:'車両運搬具',type:'資産'},
+  {name:'支払手形',type:'負債'},{name:'買掛金',type:'負債'},{name:'借入金',type:'負債'},
+  {name:'前受金',type:'負債'},{name:'未払費用',type:'負債'},{name:'預り金',type:'負債'},{name:'仮受金',type:'負債'},
+  {name:'資本金',type:'資本'},{name:'引出金',type:'資本'},
+  {name:'売上',type:'収益'},{name:'受取利息',type:'収益'},{name:'受取手数料',type:'収益'},{name:'雑益',type:'収益'},
+  {name:'仕入',type:'費用'},{name:'給料',type:'費用'},{name:'水道光熱費',type:'費用'},
+  {name:'通信費',type:'費用'},{name:'旅費交通費',type:'費用'},{name:'広告宣伝費',type:'費用'},
+  {name:'消耗品費',type:'費用'},{name:'支払利息',type:'費用'},{name:'支払手数料',type:'費用'},
+  {name:'租税公課',type:'費用'},{name:'雑損',type:'費用'},
+];
+let tests = [
+  { name:'第1回 仕訳小テスト（基礎）', time:10, cheatLimit:3,
+    questions:[
+      { scenario:'現金 100,000円 を元手に事業を開始した。', category:'資産・負債・資本', points:4,
+        entries:[{debit:'現金',debitAmt:100000,credit:'資本金',creditAmt:100000}],
+        explanation:'事業開始時の元入れ。現金（資産）の増加は借方、資本金（資本）の増加は貸方。' },
+      { scenario:'商品 30,000円 を仕入れ、代金は掛けとした。', category:'売上・仕入', points:4,
+        entries:[{debit:'仕入',debitAmt:30000,credit:'買掛金',creditAmt:30000}],
+        explanation:'仕入（費用）の発生は借方。掛け代金は買掛金（負債）の増加として貸方に記録。' },
+      { scenario:'商品 50,000円 を売り上げ、代金は現金で受け取った。', category:'売上・仕入', points:4,
+        entries:[{debit:'現金',debitAmt:50000,credit:'売上',creditAmt:50000}],
+        explanation:'現金（資産）の増加は借方、売上（収益）の発生は貸方。' },
+      { scenario:'買掛金 20,000円 を現金で支払った。', category:'資産・負債・資本', points:4,
+        entries:[{debit:'買掛金',debitAmt:20000,credit:'現金',creditAmt:20000}],
+        explanation:'買掛金（負債）の減少は借方、現金（資産）の減少は貸方。' },
+      { scenario:'給料 80,000円 を現金で支払った。', category:'収益・費用', points:4,
+        entries:[{debit:'給料',debitAmt:80000,credit:'現金',creditAmt:80000}],
+        explanation:'給料（費用）の発生は借方、現金（資産）の減少は貸方。' },
+    ]
+  },
+  { name:'第2回 仕訳小テスト（応用）', time:12, cheatLimit:2,
+    questions:[
+      { scenario:'商品 40,000円 を仕入れ、代金のうち15,000円は現金で支払い、残額は掛けとした。', category:'売上・仕入', points:6,
+        entries:[{debit:'仕入',debitAmt:40000,credit:'現金',creditAmt:15000},{debit:'',debitAmt:0,credit:'買掛金',creditAmt:25000}],
+        explanation:'複合仕訳。仕入40,000円を借方に、貸方は現金15,000円と買掛金25,000円に分ける。' },
+      { scenario:'売掛金 60,000円 を当座預金口座で回収した。', category:'現金・預金', points:4,
+        entries:[{debit:'当座預金',debitAmt:60000,credit:'売掛金',creditAmt:60000}],
+        explanation:'売掛金（資産）の減少は貸方、当座預金（資産）の増加は借方。' },
+      { scenario:'備品 200,000円 を購入し、代金は小切手を振り出して支払った。', category:'固定資産', points:4,
+        entries:[{debit:'備品',debitAmt:200000,credit:'当座預金',creditAmt:200000}],
+        explanation:'小切手の振り出しは当座預金（資産）の減少。備品（資産）の取得は借方。' },
+    ]
+  }
+];
+
+let editingTestIdx = null;
+let currentTestQuestions = [];
+let modalRowCount = 0;
+let currentUser = null;
+
+// ══════════════════════════════════════════════
+// WINDOW ACCESS CHECK
+// ══════════════════════════════════════════════
+
+/**
+ * クラスの受験可否を判定する
+ * 優先順位: manualOpen > schedule
+ * 戻り値: { allowed: bool, status: 'manual-open'|'open'|'scheduled'|'closed', nextWindow?: {start,end} }
+ */
+function checkClassWindow(cls) {
+  const clsData = classes[cls];
+  if (!clsData) return { allowed: false, status: 'closed' };
+  const w = clsData.window;
+
+  // 手動OPENが最優先
+  if (w.manualOpen) return { allowed: true, status: 'manual-open' };
+
+  const now = new Date();
+  // スケジュールを確認
+  for (const s of (w.schedules || [])) {
+    if (!s.start || !s.end) continue;
+    const start = new Date(s.start);
+    const end = new Date(s.end);
+    if (now >= start && now <= end) return { allowed: true, status: 'open', schedule: s };
+  }
+
+  // 次の予定があるか探す
+  const future = (w.schedules || []).filter(s => s.start && new Date(s.start) > now)
+    .sort((a,b) => new Date(a.start)-new Date(b.start));
+  if (future.length) return { allowed: false, status: 'scheduled', nextWindow: future[0] };
+
+  return { allowed: false, status: 'closed' };
+}
+
+function fmtDate(str) {
+  if (!str) return '未設定';
+  const d = new Date(str);
+  return d.toLocaleString('ja-JP', {month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+
+// ══════════════════════════════════════════════
+// LOGIN
+// ══════════════════════════════════════════════
+let loginTab = 'student';
+function switchLoginTab(t) {
+  loginTab = t;
+  document.getElementById('ltab-student').classList.toggle('active', t==='student');
+  document.getElementById('ltab-teacher').classList.toggle('active', t==='teacher');
+  document.getElementById('login-student-fields').classList.toggle('hidden', t!=='student');
+  document.getElementById('login-teacher-fields').classList.toggle('hidden', t!=='teacher');
+  document.getElementById('login-error').classList.add('hidden');
+}
+function doLogin() {
+  const errEl = document.getElementById('login-error');
+  errEl.classList.add('hidden');
+  if (loginTab === 'teacher') {
+    if (document.getElementById('l-tpw').value !== TEACHER_PW) {
+      errEl.textContent = 'パスワードが違います'; errEl.classList.remove('hidden'); return;
+    }
+    currentUser = { role:'teacher', id:'teacher', name:'先生' };
+  } else {
+    const id = document.getElementById('l-sid').value.trim();
+    const pw = document.getElementById('l-spw').value;
+    if (!id || !students[id] || students[id].pw !== pw) {
+      errEl.textContent = '生徒IDまたはパスワードが正しくありません'; errEl.classList.remove('hidden'); return;
+    }
+    currentUser = { role:'student', id, name:students[id].name, cls:students[id].cls };
+  }
+  document.getElementById('screen-login').classList.add('hidden');
+  document.getElementById('main-app').classList.remove('hidden');
+  document.getElementById('topbar-username').textContent = currentUser.name;
+  document.getElementById('nav-teacher').style.display = currentUser.role==='teacher' ? '' : 'none';
+  document.getElementById('welcome-teacher-card').style.display = currentUser.role==='teacher' ? '' : 'none';
+  goScreen('welcome');
+  startClock();
+  loadFromGAS(); // GASからデータ取得
+}
+function doLogout() {
+  stopCheatDetection(); currentUser = null; cheatCount = 0;
+  document.getElementById('main-app').classList.add('hidden');
+  document.getElementById('screen-login').classList.remove('hidden');
+  document.getElementById('l-sid').value=''; document.getElementById('l-spw').value=''; document.getElementById('l-tpw').value='';
+  stopClock();
+}
+
+// ══════════════════════════════════════════════
+// CLOCK
+// ══════════════════════════════════════════════
+let clockInterval = null;
+function startClock() {
+  stopClock();
+  const tick = () => {
+    const now = new Date();
+    document.getElementById('topbar-clock').textContent =
+      now.toLocaleTimeString('ja-JP', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  };
+  tick(); clockInterval = setInterval(tick, 1000);
+}
+function stopClock() { clearInterval(clockInterval); }
+
+// ══════════════════════════════════════════════
+// SCREEN NAV
+// ══════════════════════════════════════════════
+function goScreen(s) {
+  ['welcome','teacher','student'].forEach(x => document.getElementById('screen-'+x).classList.add('hidden'));
+  document.getElementById('screen-'+s).classList.remove('hidden');
+  document.querySelectorAll('.nav-tab').forEach((t,i) => t.classList.toggle('active', ['welcome','teacher','student'][i]===s));
+  if (s==='teacher') { if (currentUser?.role!=='teacher') { goScreen('welcome'); return; } tTab('classes'); }
+  if (s==='student') { checkAccess(); }
+}
+
+// 受験画面アクセスチェック
+function checkAccess() {
+  if (!currentUser || currentUser.role === 'teacher') { sTab('select'); renderTestGrid(); return; }
+  const result = checkClassWindow(currentUser.cls);
+  if (result.allowed) {
+    sTab('select'); renderTestGrid();
+    document.getElementById('s-class-badge').textContent = `✅ ${currentUser.cls} 受験中`;
+  } else {
+    sTab('locked');
+    const cls = classes[currentUser.cls];
+    document.getElementById('locked-title').textContent = '現在は受験できません';
+    let desc = `あなたのクラス（${currentUser.cls}）は現在受験時間外です。`;
+    let windowHtml = '';
+    if (result.status === 'scheduled' && result.nextWindow) {
+      desc += `\n次の受験可能時間は以下の通りです：`;
+      windowHtml = `<div>📅 開始：${fmtDate(result.nextWindow.start)}</div><div>🏁 終了：${fmtDate(result.nextWindow.end)}</div>`;
+    } else {
+      desc += `\n先生の指示をお待ちください。`;
+    }
+    document.getElementById('locked-desc').textContent = desc;
+    document.getElementById('locked-window').innerHTML = windowHtml || '受験ウィンドウが設定されていません';
+  }
+}
+
+function sTab(t) {
+  ['locked','select','exam','result'].forEach(x => document.getElementById('s-'+x).classList.add('hidden'));
+  document.getElementById('s-'+t).classList.remove('hidden');
+}
+function tTab(t) {
+  ['classes','students','tests','create','cheatlog','accounts'].forEach(x => {
+    document.getElementById('t-'+x).classList.add('hidden');
+    document.getElementById('stab-'+x)?.classList.remove('active');
+  });
+  document.getElementById('t-'+t).classList.remove('hidden');
+  document.getElementById('stab-'+t)?.classList.add('active');
+  if(t==='classes') renderClassGrid();
+  if(t==='students') renderStudentTable();
+  if(t==='tests') renderTestList();
+  if(t==='create') initCreateForm();
+  if(t==='cheatlog') renderCheatLog();
+  if(t==='accounts') renderAccountTable();
+}
+
+// ══════════════════════════════════════════════
+// CLASS MANAGEMENT
+// ══════════════════════════════════════════════
+function renderClassGrid() {
+  const grid = document.getElementById('class-grid');
+  grid.innerHTML = '';
+  Object.entries(classes).forEach(([clsName, clsData]) => {
+    const w = clsData.window;
+    const result = checkClassWindow(clsName);
+    const statusMap = {
+      'manual-open': ['🟢 手動開放中', 'manual-open'],
+      'open':        ['🟢 受験可能（スケジュール）', 'open'],
+      'scheduled':   ['🕐 予定あり', 'scheduled'],
+      'closed':      ['🔴 受験不可', 'closed'],
+    };
+    const [statusLabel, statusKey] = statusMap[result.status] || ['🔴 受験不可','closed'];
+    const studentCount = Object.values(students).filter(s => s.cls === clsName).length;
+
+    const card = document.createElement('div');
+    card.className = 'class-card';
+    card.innerHTML = `
+      <div class="class-card-header">
+        <div>
+          <div class="class-card-name">${clsName}</div>
+          <div style="font-size:12px;color:var(--text2);">${clsData.desc||''}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+          <span class="window-status ${statusKey}">${statusLabel}</span>
+          <span class="badge badge-gray">${studentCount}名</span>
+        </div>
+      </div>
+      <div class="class-card-body">
+        <!-- 手動ON/OFF -->
+        <div class="status-row">
+          <div>
+            <div class="status-label">🖐 手動開放</div>
+            <div style="font-size:11px;color:var(--text2);">ONにすると即座に受験可能になります</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="manual-${clsName}" ${w.manualOpen?'checked':''} onchange="toggleManual('${clsName}',this.checked)">
+            <div class="toggle-track"></div>
+            <div class="toggle-thumb"></div>
+          </label>
+        </div>
+        <!-- スケジュール -->
+        <div style="margin-top:10px;">
+          <div style="font-size:12px;font-weight:600;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;">
+            📅 受験ウィンドウ（日時指定）
+            <button class="btn btn-ghost btn-sm" onclick="addSchedule('${clsName}')" style="font-size:11px;padding:3px 8px;">＋ 追加</button>
+          </div>
+          <div id="schedules-${clsName}">${renderSchedules(clsName)}</div>
+        </div>
+      </div>`;
+    grid.appendChild(card);
+  });
+}
+
+function renderSchedules(clsName) {
+  const schedules = classes[clsName]?.window?.schedules || [];
+  if (!schedules.length) return `<div style="font-size:12px;color:var(--text3);padding:6px 0;">スケジュールなし</div>`;
+  const now = new Date();
+  return schedules.map((s, i) => {
+    const start = new Date(s.start), end = new Date(s.end);
+    const isActive = now >= start && now <= end;
+    const isPast = now > end;
+    return `<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid var(--ruled);font-size:12px;">
+      <span class="window-status ${isActive?'open':isPast?'closed':'scheduled'}" style="font-size:10px;">${isActive?'進行中':isPast?'終了':'予定'}</span>
+      <span style="flex:1;color:var(--text2);">${fmtDate(s.start)} 〜 ${fmtDate(s.end)}</span>
+      <button onclick="removeSchedule('${clsName}',${i})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:12px;">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function toggleManual(clsName, val) {
+  classes[clsName].window.manualOpen = val;
+  renderClassGrid();
+  toast(val ? `${clsName} を手動開放しました` : `${clsName} を手動クローズしました`, val?'ok':'ng');
+}
+
+function addSchedule(clsName) {
+  // インライン追加フォームを表示
+  const container = document.getElementById('schedules-'+clsName);
+  const id = 'new-sched-'+clsName;
+  if (document.getElementById(id)) return;
+  const now = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  const defaultStart = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  const defaultEnd = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours()+1)}:${pad(now.getMinutes())}`;
+  const div = document.createElement('div');
+  div.id = id;
+  div.innerHTML = `<div class="window-editor">
+    <div class="window-row"><span>開始</span><input type="datetime-local" class="input" id="${id}-start" value="${defaultStart}"></div>
+    <div class="window-row"><span>終了</span><input type="datetime-local" class="input" id="${id}-end" value="${defaultEnd}"></div>
+    <div style="display:flex;gap:6px;margin-top:4px;">
+      <button class="btn btn-primary btn-sm" onclick="confirmSchedule('${clsName}','${id}')">追加</button>
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('${id}').remove()">キャンセル</button>
+    </div>
+  </div>`;
+  container.appendChild(div);
+}
+
+function confirmSchedule(clsName, id) {
+  const start = document.getElementById(id+'-start')?.value;
+  const end = document.getElementById(id+'-end')?.value;
+  if (!start || !end) { toast('開始・終了を入力してください','ng'); return; }
+  if (new Date(start) >= new Date(end)) { toast('終了は開始より後にしてください','ng'); return; }
+  classes[clsName].window.schedules.push({ start, end });
+  renderClassGrid();
+  toast('スケジュールを追加しました ✓','ok');
+}
+
+function removeSchedule(clsName, idx) {
+  classes[clsName].window.schedules.splice(idx, 1);
+  renderClassGrid();
+}
+
+function openAddClass() { document.getElementById('modal-class').classList.remove('hidden'); }
+function addClass() {
+  const name = document.getElementById('cls-name').value.trim();
+  const desc = document.getElementById('cls-desc').value.trim();
+  if (!name) { toast('クラス名を入力してください','ng'); return; }
+  if (classes[name]) { toast('そのクラスは既に存在します','ng'); return; }
+  classes[name] = { desc, window:{ manualOpen:false, schedules:[] } };
+  renderClassGrid(); closeModal('modal-class'); toast('クラスを追加しました ✓','ok');
+}
+
+// ══════════════════════════════════════════════
+// STUDENT MANAGER
+// ══════════════════════════════════════════════
+function renderStudentTable() {
+  // フィルタ
+  const filterSel = document.getElementById('student-filter-cls');
+  const allCls = ['すべて', ...Object.keys(classes)];
+  const currentVal = filterSel.value;
+  filterSel.innerHTML = allCls.map(c=>`<option${c===currentVal?' selected':''}>${c}</option>`).join('');
+  const filter = filterSel.value;
+
+  const tbody = document.getElementById('student-tbody'); tbody.innerHTML='';
+  Object.entries(students).forEach(([id,s])=>{
+    if (filter !== 'すべて' && s.cls !== filter) return;
+    const tr = document.createElement('tr');
+    const result = checkClassWindow(s.cls);
+    tr.innerHTML=`<td style="font-family:'DM Mono',monospace;font-size:12px;">${id}</td>
+    <td style="font-weight:500;">${s.name}</td>
+    <td><span class="badge badge-blue">${s.cls}</span></td>
+    <td><span class="pw-cell">${s.pw}</span></td>
+    <td style="font-size:12px;color:var(--text2);">${s.lastExam}</td>
+    <td><button class="btn btn-ghost btn-sm" onclick="deleteStudent('${id}')">削除</button></td>`;
+    tbody.appendChild(tr);
+  });
+}
+function openAddStudent() {
+  const sel = document.getElementById('s-cls-sel');
+  sel.innerHTML = Object.keys(classes).map(c=>`<option>${c}</option>`).join('');
+  document.getElementById('modal-student').classList.remove('hidden');
+}
+function addStudent() {
+  const id=document.getElementById('s-id').value.trim();
+  const name=document.getElementById('s-name').value.trim();
+  const cls=document.getElementById('s-cls-sel').value;
+  const pw=document.getElementById('s-pw').value.trim();
+  if(!id||!name||!pw){toast('ID・氏名・パスワードを入力してください','ng');return;}
+  if(students[id]){toast('そのIDは既に登録されています','ng');return;}
+  students[id]={name,cls,pw,lastExam:'-'};
+  renderStudentTable(); closeModal('modal-student'); toast('追加しました ✓','ok');
+}
+function deleteStudent(id){if(confirm(`「${students[id].name}」を削除しますか？`)){delete students[id];renderStudentTable();}}
+
+// ══════════════════════════════════════════════
+// TEACHER — TEST
+// ══════════════════════════════════════════════
+function renderTestList(){
+  const list=document.getElementById('test-list'); const empty=document.getElementById('test-list-empty');
+  list.innerHTML=''; if(!tests.length){empty.classList.remove('hidden');return;} empty.classList.add('hidden');
+  tests.forEach((t,i)=>{
+    const totalPts=t.questions.reduce((s,q)=>s+q.points,0);
+    const d=document.createElement('div'); d.className='q-list-item';
+    d.innerHTML=`<span class="q-num">${String(i+1).padStart(2,'0')}</span>
+    <div class="q-body"><div style="font-weight:600;font-size:14px;">${t.name}</div>
+    <div class="q-tags"><span class="badge badge-ink">${t.questions.length}問</span><span class="badge badge-gold">計${totalPts}点</span><span class="badge badge-blue">⏱ ${t.time}分</span><span class="badge badge-warn">警告${t.cheatLimit||3}回</span></div></div>
+    <div class="q-actions">
+      <button class="btn btn-ghost btn-sm" onclick="editTest(${i})">✏️ 編集</button>
+      <button class="btn btn-sm" style="background:#fee2e2;color:var(--error);border:none;" onclick="deleteTest(${i})">🗑</button>
+    </div>`;
+    list.appendChild(d);
+  });
+}
+function deleteTest(i){if(confirm(`「${tests[i].name}」を削除しますか？`)){tests.splice(i,1);renderTestList();toast('削除しました','ng');}}
+function editTest(i){
+  editingTestIdx=i; const t=tests[i];
+  document.getElementById('t-name').value=t.name; document.getElementById('t-time').value=t.time;
+  document.getElementById('t-cheat-limit').value=t.cheatLimit||3;
+  currentTestQuestions=JSON.parse(JSON.stringify(t.questions));
+  document.getElementById('create-heading').textContent='テストを編集'; tTab('create');
+}
+function initCreateForm(){
+  if(editingTestIdx===null){
+    document.getElementById('t-name').value=''; document.getElementById('t-time').value=10; document.getElementById('t-cheat-limit').value=3;
+    currentTestQuestions=[]; document.getElementById('create-heading').textContent='新規テスト作成';
+  }
+  renderQPreview();
+}
+function renderQPreview(){
+  const c=document.getElementById('q-preview-list'); const e=document.getElementById('q-preview-empty');
+  document.getElementById('q-cnt').textContent=currentTestQuestions.length; c.innerHTML='';
+  if(!currentTestQuestions.length){e.style.display='block';return;} e.style.display='none';
+  currentTestQuestions.forEach((q,i)=>{
+    const d=document.createElement('div');
+    d.style.cssText='display:flex;align-items:flex-start;gap:10px;background:rgba(255,255,255,.95);border:1px solid var(--ruled);border-radius:8px;padding:10px 12px;';
+    const e0=q.entries[0];
+    d.innerHTML=`<span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);min-width:24px;">Q${i+1}</span>
+    <div style="flex:1;"><div style="font-size:13px;margin-bottom:4px;">${q.scenario.substring(0,55)}${q.scenario.length>55?'…':''}</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;">
+      <span class="badge badge-blue">借:${e0.debit} ${e0.debitAmt.toLocaleString()}</span>
+      <span class="badge badge-green">貸:${e0.credit} ${e0.creditAmt.toLocaleString()}</span>
+      <span class="badge badge-gold">${q.points}点</span>
+    </div></div>
+    <button class="btn btn-ghost btn-sm" onclick="removeQ(${i})" style="padding:4px 8px;">✕</button>`;
+    c.appendChild(d);
+  });
+}
+function removeQ(i){currentTestQuestions.splice(i,1);renderQPreview();}
+function saveTest(){
+  const name=document.getElementById('t-name').value.trim();
+  if(!name){toast('テスト名を入力してください','ng');return;}
+  if(!currentTestQuestions.length){toast('問題を1問以上追加してください','ng');return;}
+  const obj={name,time:parseInt(document.getElementById('t-time').value)||10,cheatLimit:parseInt(document.getElementById('t-cheat-limit').value)||3,questions:currentTestQuestions};
+  if(editingTestIdx!==null){tests[editingTestIdx]=obj;editingTestIdx=null;} else tests.push(obj);
+  gasPost({ action:'saveTest', test:obj }); // GASにも保存
+  toast('保存しました ✓','ok'); tTab('tests');
+}
+function openAddQ(){
+  document.getElementById('mq-scenario').value=''; document.getElementById('mq-explanation').value='';
+  document.getElementById('mq-points').value=4; document.getElementById('modal-rows').innerHTML='';
+  modalRowCount=0; addModalRow(); document.getElementById('modal-addq').classList.remove('hidden');
+}
+function addModalRow(){
+  const r=document.createElement('div'); r.className='answer-row '+(modalRowCount%2===0?'debit-answer':'credit-answer');
+  r.innerHTML=`<div class="answer-cell"><select class="answer-select" id="md-${modalRowCount}">${accountOptions()}</select></div>
+  <div class="answer-cell-amount"><input type="number" class="answer-input-amount" id="mda-${modalRowCount}" placeholder="0" min="0" oninput="autoFill(${modalRowCount})"></div>
+  <div class="answer-cell"><select class="answer-select" id="mc-${modalRowCount}">${accountOptions()}</select></div>
+  <div class="answer-cell-amount"><input type="number" class="answer-input-amount" id="mca-${modalRowCount}" placeholder="0" min="0"></div>`;
+  document.getElementById('modal-rows').appendChild(r); modalRowCount++;
+}
+function autoFill(i){const da=document.getElementById('mda-'+i);const ca=document.getElementById('mca-'+i);if(!ca.value&&da.value)ca.value=da.value;}
+function accountOptions(sel=''){return`<option value="">（選択）</option>`+accounts.map(a=>`<option value="${a.name}"${a.name===sel?' selected':''}>${a.name}</option>`).join('');}
+function addQuestion(){
+  const scenario=document.getElementById('mq-scenario').value.trim();
+  if(!scenario){toast('問題文を入力してください','ng');return;}
+  const entries=[];
+  for(let i=0;i<modalRowCount;i++){
+    const d=document.getElementById('md-'+i)?.value||''; const da=parseFloat(document.getElementById('mda-'+i)?.value||0);
+    const c=document.getElementById('mc-'+i)?.value||''; const ca=parseFloat(document.getElementById('mca-'+i)?.value||0);
+    if(d||c)entries.push({debit:d,debitAmt:da,credit:c,creditAmt:ca});
+  }
+  if(!entries.length||!entries[0].debit||!entries[0].credit){toast('借方・貸方の勘定科目を入力してください','ng');return;}
+  currentTestQuestions.push({scenario,category:document.getElementById('mq-category').value,points:parseInt(document.getElementById('mq-points').value)||4,entries,explanation:document.getElementById('mq-explanation').value.trim()});
+  renderQPreview(); closeModal('modal-addq'); toast('問題を追加しました ✓','ok');
+}
+
+// ── CHEAT LOG ──
+function renderCheatLog(){
+  const list=document.getElementById('cheat-log-list'); const empty=document.getElementById('cheat-log-empty');
+  list.innerHTML=''; if(!cheatLog.length){empty.style.display='block';return;} empty.style.display='none';
+  [...cheatLog].reverse().forEach(l=>{
+    const d=document.createElement('div'); d.className='cheat-log-item '+(l.count>=cheatLimit?'danger':'warn');
+    d.innerHTML=`<span>${l.count>=cheatLimit?'🚨':'⚠️'}</span>
+    <span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);min-width:60px;">${l.time}</span>
+    <span style="font-weight:600;">${l.user}（${l.userId}）</span>
+    <span class="badge badge-blue">${l.cls}</span>
+    <span style="color:var(--text2);">「${l.test}」— 警告 ${l.count}回目</span>
+    <span class="badge ${l.count>=cheatLimit?'badge-red':'badge-warn'}">${l.type==='tab'?'タブ切替':'ウィンドウ'}</span>`;
+    list.appendChild(d);
+  });
+}
+function clearCheatLog(){if(confirm('不正記録をすべて消去しますか？')){cheatLog=[];renderCheatLog();}}
+
+// ── ACCOUNTS ──
+function renderAccountTable(){
+  const types=['資産','負債','資本','収益','費用'];
+  const colors={資産:'blue',負債:'red',資本:'gold',収益:'green',費用:'ink'};
+  let html='<div style="display:flex;flex-direction:column;gap:16px;">';
+  types.forEach(t=>{
+    const list=accounts.filter(a=>a.type===t);
+    html+=`<div><div style="font-weight:700;font-size:13px;margin-bottom:8px;display:flex;align-items:center;gap:6px;"><span class="badge badge-${colors[t]}">${t}</span><span style="color:var(--text2);font-weight:400;font-size:12px;">${list.length}科目</span></div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;">${list.map(a=>`<span style="background:var(--paper2);border:1px solid var(--ruled);border-radius:5px;padding:3px 10px;font-size:12px;display:flex;align-items:center;gap:4px;">${a.name} <button onclick="delAccount('${a.name}')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:11px;padding:0;">✕</button></span>`).join('')}
+    </div></div>`;
+  });
+  html+='</div>';
+  document.getElementById('account-table-wrap').innerHTML=html;
+}
+function openAddAccount(){document.getElementById('modal-account').classList.remove('hidden');}
+function addAccount(){
+  const name=document.getElementById('acc-name').value.trim();
+  if(!name){toast('科目名を入力してください','ng');return;}
+  if(accounts.find(a=>a.name===name)){toast('既に登録されています','ng');return;}
+  accounts.push({name,type:document.getElementById('acc-type').value});
+  renderAccountTable(); closeModal('modal-account'); toast('追加しました ✓','ok');
+}
+function delAccount(name){accounts=accounts.filter(a=>a.name!==name);renderAccountTable();}
+
+// ══════════════════════════════════════════════
+// CHEAT DETECTION
+// ══════════════════════════════════════════════
+let cheatCount=0, cheatLimit=3, isExamActive=false, forceTimer=null, lastBlurTime=0;
+function startCheatDetection(limit){
+  cheatLimit=limit||3; cheatCount=0; isExamActive=true; updateCheatBar();
+  document.addEventListener('visibilitychange',onVisChange);
+  window.addEventListener('blur',onWinBlur);
+}
+function stopCheatDetection(){
+  isExamActive=false;
+  document.removeEventListener('visibilitychange',onVisChange);
+  window.removeEventListener('blur',onWinBlur);
+  document.getElementById('cheat-overlay').classList.add('hidden');
+  document.getElementById('force-submit-overlay').classList.add('hidden');
+  document.getElementById('cheat-warn-bar').classList.add('hidden');
+  clearInterval(forceTimer);
+}
+function onVisChange(){if(!isExamActive)return; if(document.hidden)triggerCheat('tab');}
+function onWinBlur(){
+  if(!isExamActive)return;
+  const now=Date.now(); if(now-lastBlurTime<300)return; lastBlurTime=now;
+  if(document.hidden)return;
+  triggerCheat('window');
+}
+function triggerCheat(type){
+  if(!isExamActive)return;
+  cheatCount++;
+  const time=new Date().toLocaleTimeString('ja-JP');
+  const userName=currentUser?.name||'不明';
+  cheatLog.push({time,user:userName,userId:currentUser?.id||'',cls:currentUser?.cls||'-',test:currentTest?.name||'不明',count:cheatCount,type});
+  // GASにも送信
+  gasPost({ action:'saveCheat', user:userName, userId:currentUser?.id||'', cls:currentUser?.cls||'-', test:currentTest?.name||'不明', count:cheatCount, type });
+  if(cheatCount>cheatLimit){stopCheatDetection();forceSubmitCountdown();return;}
+  const remaining=cheatLimit-cheatCount; const isLast=remaining<=0;
+  document.getElementById('cheat-icon').textContent=isLast?'🚨':'⚠️';
+  document.getElementById('cheat-title').textContent=type==='tab'?'タブ切り替えを検知しました':'ウィンドウ切り替えを検知しました';
+  document.getElementById('cheat-desc').textContent=isLast?'次に切り替えると自動提出されます！':'テスト中に他の画面を開くことは禁止されています。';
+  const counter=document.getElementById('cheat-counter');
+  counter.textContent=`⚠️ 警告 ${cheatCount} / ${cheatLimit} 回`;
+  counter.className='cheat-counter '+(isLast?'red':'yellow');
+  document.getElementById('cheat-resume-btn').textContent=isLast?'⚠️ テストに戻る（次で自動提出）':'テストに戻る';
+  document.getElementById('cheat-overlay').classList.remove('hidden');
+  updateCheatBar();
+}
+function closeCheatOverlay(){document.getElementById('cheat-overlay').classList.add('hidden');}
+function updateCheatBar(){
+  if(!isExamActive||cheatCount===0){document.getElementById('cheat-warn-bar').classList.add('hidden');return;}
+  document.getElementById('cheat-warn-bar').classList.remove('hidden');
+  document.getElementById('cheat-warn-text').textContent=`タブ切り替え警告: ${cheatCount}/${cheatLimit}回 — あと${cheatLimit-cheatCount}回で自動提出`;
+}
+function forceSubmitCountdown(){
+  document.getElementById('force-submit-overlay').classList.remove('hidden');
+  let c=3; document.getElementById('force-count').textContent=c;
+  forceTimer=setInterval(()=>{c--; document.getElementById('force-count').textContent=c; if(c<=0){clearInterval(forceTimer);document.getElementById('force-submit-overlay').classList.add('hidden');submitExam(true);}},1000);
+}
+
+// ══════════════════════════════════════════════
+// STUDENT — EXAM
+// ══════════════════════════════════════════════
+let currentTest=null, examIdx=0, examAnswers=[], examSkipped=[], examTimer=null, examTimeLeft=0, examDone=false;
+function renderTestGrid(){
+  const g=document.getElementById('s-test-grid'); const e=document.getElementById('s-empty');
+  g.innerHTML=''; if(!tests.length){e.classList.remove('hidden');return;} e.classList.add('hidden');
+  tests.forEach((t,i)=>{
+    const totalPts=t.questions.reduce((s,q)=>s+q.points,0);
+    const d=document.createElement('div'); d.className='test-card';
+    d.innerHTML=`<div style="font-size:1.8rem;margin-bottom:10px;">📝</div>
+    <div class="test-card-title">${t.name}</div>
+    <div class="test-card-meta">${t.questions.length}問 ／ 計${totalPts}点<br>⏱ ${t.time}分</div>
+    <div style="margin-top:10px;"><button class="btn btn-primary btn-sm w-full">受験する</button></div>`;
+    d.querySelector('button').onclick=()=>startExam(i);
+    g.appendChild(d);
+  });
+}
+function startExam(i){
+  currentTest=tests[i]; examIdx=0; examDone=false;
+  examAnswers=new Array(currentTest.questions.length).fill(null);
+  examSkipped=new Array(currentTest.questions.length).fill(false);
+  examTimeLeft=currentTest.time*60;
+  document.getElementById('exam-title-label').textContent=currentTest.name;
+  document.getElementById('exam-meta-label').textContent=currentTest.questions.length+'問 ／ 計'+currentTest.questions.reduce((s,q)=>s+q.points,0)+'点';
+  document.getElementById('cheat-warn-bar').classList.add('hidden');
+  sTab('exam'); renderQuestion();
+  // 提出ボタンのonclickをリセット（2回目確認後に書き換わるので戻す）
+  document.getElementById('e-submit-btn').onclick=()=>confirmSubmit();
+  clearInterval(examTimer);
+  examTimer=setInterval(()=>{
+    examTimeLeft--;
+    const m=Math.floor(examTimeLeft/60),s=examTimeLeft%60;
+    const el=document.getElementById('e-timer');
+    el.textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    el.classList.toggle('red',examTimeLeft<30);
+    if(examTimeLeft<=0){clearInterval(examTimer);submitExam(false);}
+  },1000);
+  startCheatDetection(currentTest.cheatLimit||3);
+  if(currentUser?.id&&students[currentUser.id]){
+    students[currentUser.id].lastExam=new Date().toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
+  }
+}
+function retakeTest(){startExam(tests.indexOf(currentTest));}
+
+// スキップ状態を追跡（null=未訪問, false=スキップ, object=回答済み）
+let examSkipped=[]; // true=スキップマーク
+
+function renderQuestion(){
+  const q=currentTest.questions[examIdx]; const total=currentTest.questions.length;
+  document.getElementById('q-num-badge').textContent='Q'+(examIdx+1);
+  document.getElementById('q-category-badge').textContent=q.category;
+  document.getElementById('q-scenario').textContent=q.scenario;
+  document.getElementById('e-progress-fill').style.width=((examIdx+1)/total*100)+'%';
+  document.getElementById('e-progress-label').textContent=(examIdx+1)+'/'+total;
+  document.getElementById('q-feedback').className='feedback-box hidden';
+
+  // 回答欄
+  const area=document.getElementById('q-answer-area'); area.innerHTML='';
+  let html=`<div class="answer-journal"><div class="answer-journal-header"><span class="h-debit">借　方</span><span class="h-amount">金　額</span><span class="h-credit">貸　方</span><span class="h-amount">金　額</span></div>`;
+  for(let r=0;r<q.entries.length;r++){
+    html+=`<div class="answer-row ${r%2===0?'debit-answer':'credit-answer'}" id="ans-row-${r}">
+      <div class="answer-cell"><select class="answer-select" id="ans-d-${r}">${accountOptions()}</select></div>
+      <div class="answer-cell-amount"><input type="number" class="answer-input-amount" id="ans-da-${r}" placeholder="0" min="0"></div>
+      <div class="answer-cell"><select class="answer-select" id="ans-c-${r}">${accountOptions()}</select></div>
+      <div class="answer-cell-amount"><input type="number" class="answer-input-amount" id="ans-ca-${r}" placeholder="0" min="0"></div>
+    </div>`;
+  }
+  html+='</div>'; area.innerHTML=html;
+
+  // 保存済み回答を復元
+  if(examAnswers[examIdx]){
+    examAnswers[examIdx].forEach((e,r)=>{
+      const d=document.getElementById('ans-d-'+r);if(d)d.value=e.debit||'';
+      const da=document.getElementById('ans-da-'+r);if(da)da.value=e.debitAmt||'';
+      const c=document.getElementById('ans-c-'+r);if(c)c.value=e.credit||'';
+      const ca=document.getElementById('ans-ca-'+r);if(ca)ca.value=e.creditAmt||'';
+    });
+  }
+
+  // ドット更新
+  renderDots();
+
+  // ボタン状態
+  const isFirst = examIdx===0;
+  const isLast  = examIdx===total-1;
+  document.getElementById('e-prev-btn').disabled = isFirst;
+  // 最後の問題では「次へ」を隠して「提出」を表示
+  document.getElementById('e-next-btn').classList.toggle('hidden', isLast);
+  document.getElementById('e-submit-btn').classList.toggle('hidden', !isLast);
+  document.getElementById('e-skip-btn').classList.toggle('hidden', isLast);
+
+  // 未回答警告非表示
+  document.getElementById('unanswered-warn').classList.add('hidden');
+}
+
+function renderDots(){
+  const dots=document.getElementById('q-dots'); dots.innerHTML='';
+  currentTest.questions.forEach((_,i)=>{
+    const btn=document.createElement('button');
+    btn.className='q-dot-btn';
+    btn.textContent=i+1;
+    btn.title=`Q${i+1}へ移動`;
+    if(i===examIdx) btn.classList.add('current');
+    else if(examAnswers[i]!==null) btn.classList.add('answered');
+    else if(examSkipped[i]) btn.classList.add('skipped');
+    btn.onclick=()=>jumpTo(i);
+    dots.appendChild(btn);
+  });
+}
+
+function collectAnswer(){
+  const q=currentTest.questions[examIdx]; const ans=[];
+  for(let r=0;r<q.entries.length;r++){
+    ans.push({
+      debit:document.getElementById('ans-d-'+r)?.value||'',
+      debitAmt:parseFloat(document.getElementById('ans-da-'+r)?.value||0),
+      credit:document.getElementById('ans-c-'+r)?.value||'',
+      creditAmt:parseFloat(document.getElementById('ans-ca-'+r)?.value||0)
+    });
+  }
+  return ans;
+}
+
+// 現在の回答を保存（入力があれば回答済み、なければ維持）
+function saveCurrentAnswer(){
+  const ans=collectAnswer();
+  const hasInput = ans[0].debit || ans[0].credit;
+  if(hasInput){
+    examAnswers[examIdx]=ans;
+    examSkipped[examIdx]=false; // 回答済みならスキップ解除
+  }
+}
+
+function jumpTo(i){
+  saveCurrentAnswer();
+  examIdx=i;
+  renderQuestion();
+}
+
+// 次へ（回答保存して前進）
+function examNext(){
+  const ans=collectAnswer();
+  const hasInput = ans[0].debit || ans[0].credit;
+  if(!hasInput){
+    toast('借方・貸方を選択してください','ng'); return;
+  }
+  examAnswers[examIdx]=ans;
+  examSkipped[examIdx]=false;
+  if(examIdx<currentTest.questions.length-1){ examIdx++; renderQuestion(); }
+}
+
+// 前へ
+function examPrev(){
+  saveCurrentAnswer();
+  if(examIdx>0){ examIdx--; renderQuestion(); }
+}
+
+// スキップ（未回答のまま次へ）
+function examSkip(){
+  saveCurrentAnswer();
+  if(examAnswers[examIdx]===null) examSkipped[examIdx]=true; // 未回答のときのみスキップマーク
+  if(examIdx<currentTest.questions.length-1){ examIdx++; renderQuestion(); }
+}
+
+// 提出確認
+function confirmSubmit(){
+  saveCurrentAnswer();
+  // 未回答チェック
+  const unanswered=examAnswers.filter(a=>a===null).length;
+  const warnEl=document.getElementById('unanswered-warn');
+  const warnText=document.getElementById('unanswered-warn-text');
+  if(unanswered>0){
+    warnEl.classList.remove('hidden');
+    warnText.innerHTML=`<strong>${unanswered}問が未回答</strong>です。このまま提出しますか？　提出するには再度「提出する」を押してください。`;
+    // 2回目クリックで強制提出
+    document.getElementById('e-submit-btn').onclick=()=>submitExam(false);
+    return;
+  }
+  submitExam(false);
+}
+function submitExam(forced=false){
+  if(examDone)return; examDone=true; clearInterval(examTimer); stopCheatDetection();
+  showResult(forced);
+  // GASに成績を送信
+  const results = currentTest.questions.map((q,i) => gradeEntry(examAnswers[i], q.entries));
+  const correctCnt = results.filter(Boolean).length;
+  const earned = currentTest.questions.reduce((s,q,i) => s + (results[i] ? q.points : 0), 0);
+  const totalPts = currentTest.questions.reduce((s,q) => s + q.points, 0);
+  gasPost({
+    action: 'saveResult',
+    studentId:   currentUser?.id || 'guest',
+    studentName: currentUser?.name || 'ゲスト',
+    cls:         currentUser?.cls || '-',
+    testName:    currentTest.name,
+    earned, totalPts, correctCnt,
+    totalQ:      currentTest.questions.length,
+    forced,
+    cheatCount
+  });
+}
+function gradeEntry(answer,correct){
+  if(!answer)return false;
+  const matched=new Array(correct.length).fill(false); const used=new Array(answer.length).fill(false);
+  for(let ci=0;ci<correct.length;ci++){
+    for(let ai=0;ai<answer.length;ai++){
+      if(used[ai])continue; const ce=correct[ci],ae=answer[ai];
+      if(ce.debit===ae.debit&&ce.debitAmt===ae.debitAmt&&ce.credit===ae.credit&&ce.creditAmt===ae.creditAmt){matched[ci]=true;used[ai]=true;break;}
+    }
+  }
+  return matched.every(Boolean);
+}
+function showResult(forced){
+  let earned=0,totalPts=0,correctCnt=0;
+  const results=currentTest.questions.map((q,i)=>{
+    totalPts+=q.points; const ok=gradeEntry(examAnswers[i],q.entries);
+    if(ok){earned+=q.points;correctCnt++;} return{q,answer:examAnswers[i],ok};
+  });
+  const pct=Math.round(earned/totalPts*100);
+  document.getElementById('r-score').innerHTML=pct+'<span>点</span>';
+  const grades=[[90,'🏆 優秀！完璧に近い出来です'],[70,'🎯 合格ライン突破！'],[50,'📚 もう少し復習が必要です'],[0,'📖 基礎から見直しましょう']];
+  document.getElementById('r-grade').textContent=grades.find(g=>pct>=g[0])[1];
+  document.getElementById('r-sub').textContent=`${currentTest.name} ／ ${earned}/${totalPts}点`;
+  document.getElementById('r-correct').textContent=correctCnt;
+  document.getElementById('r-wrong').textContent=currentTest.questions.length-correctCnt;
+  document.getElementById('r-total').textContent=currentTest.questions.length;
+  const cn=document.getElementById('r-cheat-note');
+  cn.style.display=cheatCount>0?'block':'none';
+  cn.textContent=forced?`⚠️ タブ切り替えが${cheatCount}回検知され自動提出されました`:`⚠️ タブ切り替えの警告が${cheatCount}回記録されました`;
+  const rev=document.getElementById('r-review'); rev.innerHTML='<div class="review-title">📋 問題ごとの解説</div>';
+  results.forEach((r,i)=>{
+    const d=document.createElement('div'); d.className='review-item '+(r.ok?'correct':'wrong');
+    let ansHtml='',correctHtml='';
+    (r.answer||r.q.entries).forEach(e=>{ansHtml+=`<div style="font-size:12px;margin-top:3px;">借:${e.debit||'（未入力）'} ${e.debitAmt?.toLocaleString()||0}円 ／ 貸:${e.credit||'（未入力）'} ${e.creditAmt?.toLocaleString()||0}円</div>`;});
+    r.q.entries.forEach(e=>{correctHtml+=`<div style="font-size:12px;margin-top:3px;">借:<strong>${e.debit}</strong> ${e.debitAmt.toLocaleString()}円 ／ 貸:<strong>${e.credit}</strong> ${e.creditAmt.toLocaleString()}円</div>`;});
+    d.innerHTML=`<div class="review-item-head"><span style="font-size:1rem;flex-shrink:0;">${r.ok?'✅':'❌'}</span>
+    <div style="flex:1;"><span style="font-weight:600;font-size:12px;">Q${i+1}</span> <span style="font-size:13px;">${r.q.scenario}</span></div>
+    <span class="badge ${r.ok?'badge-green':'badge-red'}">${r.ok?'+'+r.q.points:'0'}/${r.q.points}点</span></div>
+    <div class="review-item-body"><div style="margin-bottom:6px;font-size:12px;color:var(--text2);">あなたの回答：</div>${ansHtml}
+    ${!r.ok?`<div class="correct-answer-display"><div style="font-size:11px;color:var(--text3);margin-bottom:4px;">✓ 正答</div>${correctHtml}</div>`:''}
+    ${r.q.explanation?`<div style="margin-top:8px;padding:8px 10px;background:var(--paper2);border-radius:6px;font-size:12px;line-height:1.6;"><span style="font-weight:600;color:var(--gold);">💡 解説：</span>${r.q.explanation}</div>`:''}
+    </div>`;
+    rev.appendChild(d);
+  });
+  sTab('result');
+}
+
+// UTILS
+function closeModal(id){document.getElementById(id).classList.add('hidden');}
+let _tt;
+function toast(msg,type=''){const el=document.getElementById('toast');el.textContent=msg;el.className='show '+(type||'');clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('show'),2400);}
+</script>
+</body>
+</html>
