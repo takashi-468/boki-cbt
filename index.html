@@ -343,7 +343,6 @@ body{background:var(--paper);background-image:repeating-linear-gradient(0deg,tra
       </div>
       <div id="login-error" class="login-error hidden"></div>
       <button class="btn btn-primary w-full" onclick="doLogin()">ログイン →</button>
-      <div class="login-hint">デモ: 生徒ID「S001〜S005」/ PW「boki123」　先生PW「teacher」</div>
     </div>
   </div>
 </div>
@@ -626,13 +625,41 @@ body{background:var(--paper);background-image:repeating-linear-gradient(0deg,tra
 <div class="overlay hidden" id="modal-student">
 <div class="modal-box" style="max-width:420px;">
   <div class="modal-title">生徒を追加<button class="modal-close" onclick="closeModal('modal-student')">✕</button></div>
-  <div style="display:flex;flex-direction:column;gap:12px;">
-    <div class="form-group"><span class="label">生徒ID（出席番号）</span><input class="input w-full" id="s-id" placeholder="例: 2A-06"></div>
-    <div class="form-group"><span class="label">氏名</span><input class="input w-full" id="s-name" placeholder="例: 山田 太郎"></div>
-    <div class="form-group"><span class="label">クラス</span><select class="select w-full" id="s-cls-sel"></select></div>
-    <div class="form-group"><span class="label">パスワード</span><input class="input w-full" id="s-pw" placeholder="例: boki123" autocomplete="off"></div>
+  <!-- 追加方法タブ -->
+  <div style="display:flex;border:1px solid var(--ruled);border-radius:8px;overflow:hidden;margin-bottom:16px;">
+    <button id="stab-single" onclick="switchStudentTab('single')" style="flex:1;padding:8px;font-size:13px;font-weight:500;cursor:pointer;border:none;background:var(--ink);color:#fff;font-family:'Noto Sans JP',sans-serif;">1人ずつ</button>
+    <button id="stab-bulk" onclick="switchStudentTab('bulk')" style="flex:1;padding:8px;font-size:13px;font-weight:500;cursor:pointer;border:none;background:transparent;color:var(--text2);font-family:'Noto Sans JP',sans-serif;">一括追加</button>
   </div>
-  <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('modal-student')">キャンセル</button><button class="btn btn-primary" onclick="addStudent()">追加</button></div>
+  <!-- 1人ずつ -->
+  <div id="student-single-form">
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div class="form-group"><span class="label">生徒ID（出席番号）</span><input class="input w-full" id="s-id" placeholder="例: 2A-06"></div>
+      <div class="form-group"><span class="label">氏名</span><input class="input w-full" id="s-name" placeholder="例: 山田 太郎"></div>
+      <div class="form-group"><span class="label">クラス</span><select class="select w-full" id="s-cls-sel"></select></div>
+      <div class="form-group"><span class="label">パスワード</span><input class="input w-full" id="s-pw" placeholder="例: boki123" autocomplete="off"></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('modal-student')">キャンセル</button><button class="btn btn-primary" onclick="addStudent()">追加</button></div>
+  </div>
+  <!-- 一括追加 -->
+  <div id="student-bulk-form" class="hidden">
+    <div style="font-size:12px;color:var(--text2);margin-bottom:8px;line-height:1.7;">
+      ExcelやGoogleスプレッドシートからコピーした内容を貼り付けてください。<br>
+      <strong style="color:var(--text);">列の順番：生徒ID　氏名　クラス　パスワード</strong><br>
+      <span style="color:var(--text3);">※タブ区切り（Excel貼り付け）に対応</span>
+    </div>
+    <div style="background:var(--paper2);border:1px solid var(--ruled);border-radius:6px;padding:8px 12px;font-size:11px;font-family:'DM Mono',monospace;color:var(--text3);margin-bottom:8px;">
+      例：<br>
+      2A-01　山田 太郎　2-A　boki123<br>
+      2A-02　鈴木 花子　2-A　boki123
+    </div>
+    <textarea class="input w-full" id="bulk-paste" rows="8" placeholder="ここにデータを貼り付け（Ctrl+V）..." style="resize:vertical;font-family:'DM Mono',monospace;font-size:12px;"></textarea>
+    <div id="bulk-preview" style="margin-top:10px;"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-student')">キャンセル</button>
+      <button class="btn btn-ghost" onclick="previewBulk()">👁 確認する</button>
+      <button class="btn btn-primary" onclick="addBulkStudents()">一括追加</button>
+    </div>
+  </div>
 </div>
 </div>
 
@@ -676,7 +703,8 @@ body{background:var(--paper);background-image:repeating-linear-gradient(0deg,tra
 <script>
 // ══════════════════════════════════════════════
 // GAS 連携設定
-// ★ デプロイ後にここのURLを書き換えてください ★
+// ★ Step1: GASをデプロイしてURLをここに貼り付けてください ★
+// ★ 例: 'https://script.google.com/macros/s/XXXXXX/exec' ★
 // ══════════════════════════════════════════════
 const GAS_URL = 'https://script.google.com/a/macros/hmc.hyogo-c.ed.jp/s/AKfycbwSJyGd5tH_c6QXftVObxk_8za41i9p4-v9P00xeffLhBA97Eg1LpY80LxHPlMpjBsw/exec';
 const GAS_ENABLED = GAS_URL !== 'YOUR_GAS_URL_HERE';
@@ -1128,11 +1156,25 @@ function renderStudentTable() {
     tbody.appendChild(tr);
   });
 }
+// ── 生徒追加タブ切り替え ──
+function switchStudentTab(t) {
+  document.getElementById('stab-single').style.background = t==='single' ? 'var(--ink)' : 'transparent';
+  document.getElementById('stab-single').style.color = t==='single' ? '#fff' : 'var(--text2)';
+  document.getElementById('stab-bulk').style.background = t==='bulk' ? 'var(--ink)' : 'transparent';
+  document.getElementById('stab-bulk').style.color = t==='bulk' ? '#fff' : 'var(--text2)';
+  document.getElementById('student-single-form').classList.toggle('hidden', t!=='single');
+  document.getElementById('student-bulk-form').classList.toggle('hidden', t!=='bulk');
+}
+
 function openAddStudent() {
   const sel = document.getElementById('s-cls-sel');
   sel.innerHTML = Object.keys(classes).map(c=>`<option>${c}</option>`).join('');
+  document.getElementById('bulk-paste').value = '';
+  document.getElementById('bulk-preview').innerHTML = '';
+  switchStudentTab('single');
   document.getElementById('modal-student').classList.remove('hidden');
 }
+
 function addStudent() {
   const id=document.getElementById('s-id').value.trim();
   const name=document.getElementById('s-name').value.trim();
@@ -1141,8 +1183,65 @@ function addStudent() {
   if(!id||!name||!pw){toast('ID・氏名・パスワードを入力してください','ng');return;}
   if(students[id]){toast('そのIDは既に登録されています','ng');return;}
   students[id]={name,cls,pw,lastExam:'-'};
+  // GASにも保存
+  gasPost({ action:'addStudent', id, name, cls, pw });
   renderStudentTable(); closeModal('modal-student'); toast('追加しました ✓','ok');
 }
+
+// ── 一括追加 ──
+function parseBulkText() {
+  const raw = document.getElementById('bulk-paste').value.trim();
+  if (!raw) return [];
+  return raw.split('\n').map(line => {
+    // タブまたは複数スペース区切りに対応
+    const cols = line.split(/\t|　/).map(c => c.trim()).filter(Boolean);
+    if (cols.length < 3) return null;
+    return {
+      id:   cols[0],
+      name: cols[1],
+      cls:  cols[2],
+      pw:   cols[3] || 'boki123' // パスワード省略時はデフォルト
+    };
+  }).filter(Boolean);
+}
+
+function previewBulk() {
+  const rows = parseBulkText();
+  const preview = document.getElementById('bulk-preview');
+  if (!rows.length) {
+    preview.innerHTML = `<div style="color:var(--error);font-size:12px;">データを読み取れませんでした。書式を確認してください。</div>`;
+    return;
+  }
+  let html = `<div style="font-size:12px;font-weight:600;margin-bottom:6px;">${rows.length}件を読み取りました：</div>`;
+  html += `<div style="max-height:140px;overflow-y:auto;border:1px solid var(--ruled);border-radius:6px;font-size:11px;font-family:'DM Mono',monospace;">`;
+  rows.forEach((r,i) => {
+    const dup = !!students[r.id];
+    html += `<div style="padding:4px 10px;border-bottom:1px solid var(--ruled);display:flex;gap:8px;align-items:center;${dup?'background:#fee2e2;':'i%2===0?background:var(--paper2):""'}">
+      <span style="color:${dup?'var(--error)':'var(--success)'};">${dup?'⚠️重複':'✅'}</span>
+      <span>${r.id}</span><span>${r.name}</span><span>${r.cls}</span><span style="color:var(--text3);">${r.pw}</span>
+    </div>`;
+  });
+  html += '</div>';
+  const dups = rows.filter(r => students[r.id]).length;
+  if (dups) html += `<div style="font-size:11px;color:var(--warn);margin-top:4px;">⚠️ ${dups}件は既存のIDと重複しています（スキップされます）</div>`;
+  preview.innerHTML = html;
+}
+
+async function addBulkStudents() {
+  const rows = parseBulkText();
+  if (!rows.length) { toast('データを入力してください','ng'); return; }
+  let added = 0, skipped = 0;
+  for (const r of rows) {
+    if (students[r.id]) { skipped++; continue; }
+    students[r.id] = { name:r.name, cls:r.cls, pw:r.pw, lastExam:'-' };
+    await gasPost({ action:'addStudent', id:r.id, name:r.name, cls:r.cls, pw:r.pw });
+    added++;
+  }
+  renderStudentTable();
+  closeModal('modal-student');
+  toast(`${added}件追加しました${skipped?'（'+skipped+'件スキップ）':''}`, 'ok');
+}
+
 function deleteStudent(id){if(confirm(`「${students[id].name}」を削除しますか？`)){delete students[id];renderStudentTable();}}
 
 // ══════════════════════════════════════════════
