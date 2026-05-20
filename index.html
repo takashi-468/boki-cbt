@@ -715,22 +715,20 @@ async function loadFromGAS() {
   if (!GAS_ENABLED) return;
   showSyncStatus('📡 データを読み込み中...');
   try {
-    // 生徒データ
     const remoteStudents = await gasGet('getStudents');
     if (remoteStudents && remoteStudents.length > 0) {
       remoteStudents.forEach(s => {
         students[s.id] = { name: s.name, cls: s.cls, pw: s.pw, lastExam: '-' };
       });
     }
-    // テストデータ
     const remoteTests = await gasGet('getTests');
     if (remoteTests && remoteTests.length > 0) {
-      // サンプルを上書きせずにGASのデータを優先
       tests = remoteTests;
     }
     showSyncStatus('✅ 同期完了', 2000);
   } catch(e) {
-    showSyncStatus('⚠️ オフラインモード', 2000);
+    console.warn('GAS同期失敗:', e);
+    showSyncStatus('⚠️ オフラインモードで動作中', 2000);
   }
 }
 
@@ -900,7 +898,7 @@ function doLogin() {
   document.getElementById('welcome-teacher-card').style.display = currentUser.role==='teacher' ? '' : 'none';
   goScreen('welcome');
   startClock();
-  loadFromGAS(); // GASからデータ取得
+  try { loadFromGAS(); } catch(e) { console.warn('GAS読み込みスキップ:', e); }
 }
 function doLogout() {
   stopCheatDetection(); currentUser = null; cheatCount = 0;
