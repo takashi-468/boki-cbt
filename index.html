@@ -1380,9 +1380,6 @@ function startExam(i){
 }
 function retakeTest(){startExam(tests.indexOf(currentTest));}
 
-// スキップ状態を追跡（null=未訪問, false=スキップ, object=回答済み）
-let examSkipped=[]; // true=スキップマーク
-
 function renderQuestion(){
   const q=currentTest.questions[examIdx]; const total=currentTest.questions.length;
   document.getElementById('q-num-badge').textContent='Q'+(examIdx+1);
