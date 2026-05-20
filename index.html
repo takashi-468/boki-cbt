@@ -398,6 +398,7 @@ body{background:var(--paper);background-image:repeating-linear-gradient(0deg,tra
         <button class="sidebar-item" id="stab-create" onclick="tTab('create')">✏️ テスト作成</button>
         <button class="sidebar-item" id="stab-cheatlog" onclick="tTab('cheatlog')">🚨 不正記録</button>
         <button class="sidebar-item" id="stab-accounts" onclick="tTab('accounts')">📚 勘定科目</button>
+        <button class="sidebar-item" id="stab-settings" onclick="tTab('settings')">⚙️ 設定</button>
       </div>
     </div>
   </div>
@@ -479,8 +480,31 @@ body{background:var(--paper);background-image:repeating-linear-gradient(0deg,tra
       </div>
     </div>
 
-    <!-- 勘定科目 -->
-    <div id="t-accounts" class="hidden">
+    <!-- 設定 -->
+    <div id="t-settings" class="hidden">
+      <div class="section-hd"><div class="section-title">⚙️ 設定</div></div>
+      <div class="card" style="max-width:440px;">
+        <div style="font-family:'Noto Serif JP',serif;font-size:1rem;font-weight:700;margin-bottom:4px;">🔐 先生パスワードの変更</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:16px;">パスワードはGASのスプレッドシートに保存されます。HTMLには記録されません。</div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div class="form-group">
+            <span class="label">現在のパスワード</span>
+            <input class="input w-full" type="password" id="pw-current" placeholder="現在のパスワード">
+          </div>
+          <div class="form-group">
+            <span class="label">新しいパスワード</span>
+            <input class="input w-full" type="password" id="pw-new" placeholder="新しいパスワード（8文字以上推奨）">
+          </div>
+          <div class="form-group">
+            <span class="label">新しいパスワード（確認）</span>
+            <input class="input w-full" type="password" id="pw-new2" placeholder="もう一度入力">
+          </div>
+          <div id="pw-change-error" class="hidden" style="background:#fee2e2;color:var(--error);border-radius:6px;padding:8px 12px;font-size:13px;"></div>
+          <button class="btn btn-primary" onclick="changeTeacherPw()">パスワードを変更する</button>
+          <div style="font-size:11px;color:var(--text3);">※ GASが未接続の場合は変更できません</div>
+        </div>
+      </div>
+    </div>
       <div class="section-hd">
         <div class="section-title">勘定科目一覧</div>
         <button class="btn btn-ghost btn-sm" onclick="openAddAccount()">＋ 追加</button>
@@ -775,7 +799,7 @@ function showSyncStatus(msg, hideAfter = 0) {
 // ══════════════════════════════════════════════
 // DATA
 // ══════════════════════════════════════════════
-const TEACHER_PW = 'teacher';
+const TEACHER_PW = null; // ★ HTMLにはPWを持たない。GASで認証する。
 
 // クラスマスタ
 // window: { manualOpen: bool, schedules: [{start:'YYYY-MM-DDTHH:MM', end:'YYYY-MM-DDTHH:MM'}] }
@@ -903,22 +927,46 @@ function switchLoginTab(t) {
   document.getElementById('login-teacher-fields').classList.toggle('hidden', t!=='teacher');
   document.getElementById('login-error').classList.add('hidden');
 }
-function doLogin() {
+async function doLogin() {
   const errEl = document.getElementById('login-error');
   errEl.classList.add('hidden');
-  if (loginTab === 'teacher') {
-    if (document.getElementById('l-tpw').value !== TEACHER_PW) {
-      errEl.textContent = 'パスワードが違います'; errEl.classList.remove('hidden'); return;
+  const btn = document.querySelector('#screen-login .btn-primary');
+  btn.disabled = true; btn.textContent = '確認中...';
+
+  try {
+    if (loginTab === 'teacher') {
+      const pw = document.getElementById('l-tpw').value;
+      if (!pw) { showLoginError('パスワードを入力してください'); return; }
+
+      if (GAS_ENABLED) {
+        // GASで認証
+        const res = await gasPost({ action: 'teacherLogin', pw });
+        if (!res || !res.authenticated) {
+          showLoginError('パスワードが違います'); return;
+        }
+      } else {
+        // GAS未設定時はローカルの仮PWで動作（開発・デモ用）
+        if (pw !== 'teacher2025!') {
+          showLoginError('パスワードが違います（GAS未接続）'); return;
+        }
+      }
+      currentUser = { role:'teacher', id:'teacher', name:'先生' };
+
+    } else {
+      // 生徒ログイン（GAS接続時はGASの生徒データと照合）
+      const id = document.getElementById('l-sid').value.trim();
+      const pw = document.getElementById('l-spw').value;
+      if (!id || !students[id] || students[id].pw !== pw) {
+        showLoginError('生徒IDまたはパスワードが正しくありません'); return;
+      }
+      currentUser = { role:'student', id, name:students[id].name, cls:students[id].cls };
     }
-    currentUser = { role:'teacher', id:'teacher', name:'先生' };
-  } else {
-    const id = document.getElementById('l-sid').value.trim();
-    const pw = document.getElementById('l-spw').value;
-    if (!id || !students[id] || students[id].pw !== pw) {
-      errEl.textContent = '生徒IDまたはパスワードが正しくありません'; errEl.classList.remove('hidden'); return;
-    }
-    currentUser = { role:'student', id, name:students[id].name, cls:students[id].cls };
+  } catch(e) {
+    showLoginError('通信エラーが発生しました。再度お試しください。'); return;
+  } finally {
+    btn.disabled = false; btn.textContent = 'ログイン →';
   }
+
   document.getElementById('screen-login').classList.add('hidden');
   document.getElementById('main-app').classList.remove('hidden');
   document.getElementById('topbar-username').textContent = currentUser.name;
@@ -927,6 +975,13 @@ function doLogin() {
   goScreen('welcome');
   startClock();
   try { loadFromGAS(); } catch(e) { console.warn('GAS読み込みスキップ:', e); }
+}
+
+function showLoginError(msg) {
+  const errEl = document.getElementById('login-error');
+  errEl.textContent = msg; errEl.classList.remove('hidden');
+  const btn = document.querySelector('#screen-login .btn-primary');
+  btn.disabled = false; btn.textContent = 'ログイン →';
 }
 function doLogout() {
   stopCheatDetection(); currentUser = null; cheatCount = 0;
@@ -991,7 +1046,7 @@ function sTab(t) {
   document.getElementById('s-'+t).classList.remove('hidden');
 }
 function tTab(t) {
-  ['classes','students','tests','create','cheatlog','accounts'].forEach(x => {
+  ['classes','students','tests','create','cheatlog','accounts','settings'].forEach(x => {
     document.getElementById('t-'+x).classList.add('hidden');
     document.getElementById('stab-'+x)?.classList.remove('active');
   });
@@ -1680,6 +1735,32 @@ function showResult(forced){
 
 // UTILS
 function closeModal(id){document.getElementById(id).classList.add('hidden');}
+
+// ── 先生パスワード変更 ──
+async function changeTeacherPw() {
+  const cur  = document.getElementById('pw-current').value;
+  const nw   = document.getElementById('pw-new').value;
+  const nw2  = document.getElementById('pw-new2').value;
+  const errEl = document.getElementById('pw-change-error');
+  errEl.classList.add('hidden');
+  if (!cur || !nw || !nw2) { errEl.textContent='すべて入力してください'; errEl.classList.remove('hidden'); return; }
+  if (nw !== nw2) { errEl.textContent='新しいパスワードが一致しません'; errEl.classList.remove('hidden'); return; }
+  if (nw.length < 4) { errEl.textContent='4文字以上で入力してください'; errEl.classList.remove('hidden'); return; }
+  if (!GAS_ENABLED) { errEl.textContent='GASが未接続のため変更できません'; errEl.classList.remove('hidden'); return; }
+  // 現在のPWをGASで確認
+  const check = await gasPost({ action:'teacherLogin', pw: cur });
+  if (!check || !check.authenticated) { errEl.textContent='現在のパスワードが違います'; errEl.classList.remove('hidden'); return; }
+  // 変更実行
+  const res = await gasPost({ action:'changeTeacherPw', newPw: nw });
+  if (res && res.ok) {
+    document.getElementById('pw-current').value='';
+    document.getElementById('pw-new').value='';
+    document.getElementById('pw-new2').value='';
+    toast('パスワードを変更しました ✓','ok');
+  } else {
+    errEl.textContent='変更に失敗しました'; errEl.classList.remove('hidden');
+  }
+}
 let _tt;
 function toast(msg,type=''){const el=document.getElementById('toast');el.textContent=msg;el.className='show '+(type||'');clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('show'),2400);}
 </script>
